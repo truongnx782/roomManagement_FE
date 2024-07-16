@@ -9,26 +9,28 @@ import { InputText } from 'primereact/inputtext';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { Paginator } from 'primereact/paginator';
+import '../css/style.css';
 
 function TableComponent() {
   const [data, setData] = useState([]);
   const [selectedData, setSelectedData] = useState(null);
   const [displayDialog, setDisplayDialog] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [isNew, setIsNew] = useState(false);
   const [errors, setErrors] = useState({});
-  const [page, setPage] = useState(0); 
-  const [totalPages, setTotalPages] = useState(0); 
-  const [pageSize, setPageSize] = useState(5); 
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
+  const [search, setSearch] = useState('');
+  const [trangThai, setTrangThai] = useState(null);
   const toast = useRef(null);
 
   useEffect(() => {
     fetchData();
-  }, [page, pageSize]); // Gọi fetchData() khi page hoặc pageSize thay đổi
+  }, [page, pageSize, search, trangThai]);
 
   const fetchData = async () => {
     try {
-      const response = await ApiService.getList(page, pageSize);
+      const response = await ApiService.search(page, pageSize, search, trangThai);
       setData(response.content);
       setTotalPages(response.totalPages);
     } catch (error) {
@@ -37,13 +39,9 @@ function TableComponent() {
   };
 
   const onPageChange = (event) => {
-    setPage(event.first / event.rows); // Xác định trang mới khi người dùng chuyển trang
-    setPageSize(event.rows); // Cập nhật pageSize khi người dùng thay đổi kích thước trang
+    setPage(event.first / event.rows);
+    setPageSize(event.rows);
   };
-
-  useEffect(() => {
-    setPage(0); // Reset lại page về 0 khi thay đổi pageSize
-  }, [pageSize]);
 
   const edit = async (id) => {
     try {
@@ -61,30 +59,25 @@ function TableComponent() {
       if (!validate()) {
         return;
       }
-      setLoading(true);
       if (isNew) {
         await ApiService.create(selectedData);
-        toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Thêm thành công.', life: 3000 });
+        showToast('success', 'Thành công', 'Thêm thành công.');
       } else {
         await ApiService.update(selectedData.id, selectedData);
-        toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật thành công.', life: 3000 });
+        showToast('success', 'Thành công', 'Cập nhật thành công.');
       }
-      fetchData(); // Sau khi lưu thành công, gọi fetchData để load lại dữ liệu
-      setDisplayDialog(false);
-      setSelectedData(null);
+      fetchData();
+      onHide();
     } catch (error) {
       console.error('Error updating data:', error);
-      alert('Có lỗi xảy ra khi cập nhật dữ liệu.');
-    } finally {
-      setLoading(false);
     }
   };
 
   const remove = async (id) => {
     try {
       await ApiService.delete(id);
-      fetchData(); // Sau khi xoá thành công, gọi fetchData để load lại dữ liệu
-      toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Đóng thành công.', life: 3000 });
+      fetchData();
+      showToast('success', 'Thành công', 'Đóng thành công.');
     } catch (error) {
       console.error('Error deleting data:', error);
     }
@@ -92,7 +85,7 @@ function TableComponent() {
 
   const confirmDelete = (id) => {
     confirmDialog({
-      message: 'Bạn xác nhận xoá dịch vụ này?',
+      message: 'Bạn xác nhận đóng dịch vụ này?',
       header: 'Xác nhận',
       icon: 'pi pi-exclamation-triangle',
       rejectClassName: 'btn btn-secondary',
@@ -126,10 +119,10 @@ function TableComponent() {
         type="button"
         className="btn btn-danger"
         disabled={rowData.trangThai === 0}
-        onClick={() => confirmDelete(rowData.id)}
-      >
+        onClick={() => confirmDelete(rowData.id)}>
         <i className="pi pi-trash mr-1"></i>
       </button>
+
     </div>
   );
 
@@ -173,7 +166,9 @@ function TableComponent() {
     return isValid;
   };
 
-
+  const showToast = (severity, summary, detail) => {
+    toast.current.show({ severity, summary, detail, life: 3000 });
+  };
 
   return (
     <div className="d-flex">
@@ -182,13 +177,55 @@ function TableComponent() {
         <h2 className="card-title mb-4 text-black d-flex justify-content-center">QUẢN LÝ DỊCH VỤ</h2>
         <div className="card shadow-sm">
           <div className="card-body">
-            <Button onClick={openNew} className="btn btn-success mb-3">
-              <i className="pi pi-plus mr-1"></i> Thêm mới
-            </Button>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <Button onClick={openNew} className="btn btn-success">
+                <i className="pi pi-plus mr-1"></i> Thêm mới
+              </Button>
+
+              {/* //SEARCH */}    
+              <div className="d-flex align-items-center">
+                <InputText
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Tìm kiếm..."
+                  className="mr-2"
+                />
+                <div className="mr-2">
+                  <label className="mr-2">Trạng thái:</label>
+                  <div className="form-check form-check-inline">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="trangThai"
+                      id="trangThaiHoatDong"
+                      value={1}
+                      checked={trangThai === 1}
+                      onChange={() => setTrangThai(1)}
+                    />
+                    <label className="form-check-label" htmlFor="trangThaiHoatDong">
+                      Hoạt Động
+                    </label>
+                  </div>
+                  <div className="form-check form-check-inline">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="trangThai"
+                      id="trangThaiDaDong"
+                      value={0}
+                      checked={trangThai === 0}
+                      onChange={() => setTrangThai(0)}
+                    />
+                    <label className="form-check-label" htmlFor="trangThaiDaDong">
+                      Đã Đóng
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
             <div className="table-responsive">
-              <DataTable
-                value={data}
-              >
+              <DataTable value={data}>
                 <Column field="maDichVu" header="Mã dịch vụ" sortable style={{ width: '14%' }}></Column>
                 <Column field="tenDichVu" header="Tên dịch vụ" sortable style={{ width: '14%' }}></Column>
                 <Column field="giaDichVu" header="Giá dịch vụ" sortable style={{ width: '14%' }}></Column>
@@ -206,20 +243,20 @@ function TableComponent() {
                           rowData.trangThai === 0
                             ? 'red'
                             : rowData.trangThai === 1
-                            ? 'green'
-                            : 'inherit',
+                              ? 'green'
+                              : 'inherit',
                         fontWeight: 'bold',
                       }}
                     >
                       {rowData.trangThai === 0
                         ? 'Đã đóng'
                         : rowData.trangThai === 1
-                        ? 'Hoạt Động'
-                        : 'Không xác định'}
+                          ? 'Hoạt Động'
+                          : 'Không xác định'}
                     </span>
                   )}
                 ></Column>
-                <Column body={action} header="Actions" sortable style={{ width: '14%' }}></Column>
+                <Column body={action} header="Hành động" sortable style={{ width: '14%' }}></Column>
               </DataTable>
             </div>
             <Paginator
@@ -227,14 +264,18 @@ function TableComponent() {
               rows={pageSize}
               totalRecords={totalPages * pageSize}
               onPageChange={onPageChange}
-              rowsPerPageOptions={[5, 10, 20]} 
+              rowsPerPageOptions={[5, 10, 20]}
               className="p-mt-5"
             />
           </div>
         </div>
       </div>
-
-      <Dialog visible={displayDialog} onHide={onHide} header={isNew ? 'Thêm mới thông tin' : 'Cập nhật thông tin'} style={{ width: '70vw' }}>
+      <Dialog
+        visible={displayDialog}
+        onHide={onHide}
+        header={isNew ? 'Thêm mới thông tin' : 'Cập nhật thông tin'}
+        style={{ width: '70vw' }}
+      >
         <div className="p-fluid">
           <div className="form-group">
             <label htmlFor="maDichVu">Mã dịch vụ</label>
@@ -243,6 +284,7 @@ function TableComponent() {
               id="maDichVu"
               value={selectedData?.maDichVu || ''}
               onChange={(e) => setSelectedData({ ...selectedData, maDichVu: e.target.value })}
+              className="form-control"
             />
           </div>
           <div className="form-group">
@@ -253,7 +295,7 @@ function TableComponent() {
               onChange={(e) => setSelectedData({ ...selectedData, tenDichVu: e.target.value })}
               className={`form-control ${errors.tenDichVu ? 'is-invalid' : ''}`}
             />
-            {errors.tenDichVu && <small className="invalid-feedback">{errors.tenDichVu}</small>}
+            <small className="invalid-feedback">{errors.tenDichVu}</small>
           </div>
           <div className="form-group">
             <label htmlFor="giaDichVu">Giá dịch vụ</label>
@@ -264,7 +306,7 @@ function TableComponent() {
               onChange={(e) => setSelectedData({ ...selectedData, giaDichVu: parseFloat(e.target.value) })}
               className={`form-control ${errors.giaDichVu ? 'is-invalid' : ''}`}
             />
-            {errors.giaDichVu && <small className="invalid-feedback">{errors.giaDichVu}</small>}
+           <small className="invalid-feedback">{errors.giaDichVu}</small>
           </div>
           <div className="form-group">
             <label htmlFor="ngayBatDau">Ngày bắt đầu</label>
@@ -275,7 +317,7 @@ function TableComponent() {
               onChange={(e) => setSelectedData({ ...selectedData, ngayBatDau: e.target.value })}
               className={`form-control ${errors.ngayBatDau ? 'is-invalid' : ''}`}
             />
-            {errors.ngayBatDau && <small className="invalid-feedback">{errors.ngayBatDau}</small>}
+            <small className="invalid-feedback">{errors.ngayBatDau}</small>
           </div>
           <div className="form-group">
             <label htmlFor="ngayKetThuc">Ngày kết thúc</label>
@@ -286,15 +328,14 @@ function TableComponent() {
               onChange={(e) => setSelectedData({ ...selectedData, ngayKetThuc: e.target.value })}
               className={`form-control ${errors.ngayKetThuc ? 'is-invalid' : ''}`}
             />
-            {errors.ngayKetThuc && <small className="invalid-feedback">{errors.ngayKetThuc}</small>}
+            <small className="invalid-feedback">{errors.ngayKetThuc}</small>
           </div>
         </div>
         <div className="p-mt-4 d-flex justify-content-end">
-          <Button label="Hủy" onClick={onHide} className="btn btn-secondary" disabled={loading} />
-          <Button label="Lưu" onClick={ConfirmSave} className="btn btn-primary mr-2" loading={loading} />
+          <Button label="Hủy" onClick={onHide} className="btn btn-secondary" style={{ marginRight: '10px' }} />
+          <Button label="Lưu" onClick={ConfirmSave} className="btn btn-primary" />
         </div>
       </Dialog>
-
       <Toast ref={toast} />
       <ConfirmDialog />
     </div>

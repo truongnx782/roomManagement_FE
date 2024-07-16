@@ -1,7 +1,13 @@
 const ApiDichVuService = {
-  async getList(page, size) {
+  async search(page, size, search, trangThai) {
     try {
-      const response = await fetch(`http://localhost:8080/dich-vu/hien-thi?page=${page}&size=${size}`);
+      const response = await fetch('http://localhost:8080/dich-vu/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ page, size, search, trangThai }),
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch data');
       }
@@ -11,6 +17,7 @@ const ApiDichVuService = {
       throw error;
     }
   },
+  
   
   async getById(id) {
     try {
