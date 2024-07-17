@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ApiService from '../Service/ApiDichVuService';
+import ApiService from '../Service/ApiTienIchService';
 import SidebarMenu from './SidebarMenu';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -85,7 +85,7 @@ function TableComponent() {
 
   const confirmDelete = (id) => {
     confirmDialog({
-      message: 'Bạn có xác nhận đóng phòng?',
+      message: 'Bạn có xác nhận đóng tiện ích?',
       header: 'Xác nhận',
       icon: 'pi pi-exclamation-triangle',
       rejectClassName: 'btn btn-secondary',
@@ -98,7 +98,7 @@ function TableComponent() {
 
   const ConfirmSave = () => {
     confirmDialog({
-      message: 'Bạn có xác nhận lưu phòng',
+      message: 'Bạn có xác nhận lưu tiện ích',
       header: 'Xác nhận',
       icon: 'pi pi-exclamation-triangle',
       rejectClassName: 'btn btn-secondary',
@@ -125,10 +125,6 @@ function TableComponent() {
     </div>
   );
 
-  const handleChange = (e) => {
-    setSelectedData({ ...selectedData, [e.target.name]: e.target.value });
-  };
-
   const onHide = () => {
     setDisplayDialog(false);
     setSelectedData(null);
@@ -146,21 +142,8 @@ function TableComponent() {
     let isValid = true;
     const errors = {};
 
-    if (!selectedData || !selectedData.serviceName || selectedData.serviceName.trim() === '') {
-      errors.serviceName = 'Tên dịch vụ không được để trống.';
-      isValid = false;
-    }
-    if (
-      !selectedData ||
-      !selectedData.servicePrice ||
-      isNaN(selectedData.servicePrice) ||
-      selectedData.servicePrice < 0
-    ) {
-      errors.servicePrice = 'Giá dịch vụ phải lớn hơn 0.';
-      isValid = false;
-    }
-    if (!selectedData || !selectedData.startDate) {
-      errors.startDate = 'Ngày bắt đầu không được để trống.';
+    if (!selectedData || !selectedData.utilityName || selectedData.utilityName.trim() === '') {
+      errors.utilityName = 'Tên tiện ích không được để trống.';
       isValid = false;
     }
 
@@ -176,7 +159,7 @@ function TableComponent() {
     <div className="d-flex">
       <SidebarMenu />
       <div className="container-fluid p-4">
-        <h2 className="card-title mb-4 text-black d-flex justify-content-center"> QUẢN LÝ DỊCH VỤ</h2>
+        <h2 className="card-title mb-4 text-black d-flex justify-content-center"> QUẢN LÝ TIỆN ÍCH</h2>
         <div className="card shadow-sm">
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-3">
@@ -224,14 +207,12 @@ function TableComponent() {
                   </div>
                 </div>
               </div>
+
             </div>
             <div className="table-responsive">
               <DataTable value={data}>
-                <Column field="serviceCode" header="Mã dịch vụ" sortable style={{ width: '14%' }}></Column>
-                <Column field="serviceName" header="Tên dịch vụ" sortable style={{ width: '14%' }}></Column>
-                <Column field="servicePrice" header="Giá dịch vụ" sortable style={{ width: '14%' }}></Column>
-                <Column field="startDate" header="Ngày bắt đầu" sortable style={{ width: '14%' }}></Column>
-                <Column field="endDate" header="Ngày kết thúc" sortable style={{ width: '14%' }}></Column>
+                <Column field="utilityCode" header="Mã tiện ích" sortable style={{ width: '30%' }}></Column>
+                <Column field="utilityCode" header="Tên tiện ích" sortable style={{ width: '30%' }}></Column>
                 <Column
                   field="status"
                   header="Trạng thái"
@@ -257,7 +238,7 @@ function TableComponent() {
                     </span>
                   )}
                 ></Column>
-                <Column body={action} header="Hành động" sortable style={{ width: '14%' }}></Column>
+                <Column body={action} header="Hành động" sortable style={{ width: '30%' }}></Column>
               </DataTable>
             </div>
             <Paginator
@@ -274,66 +255,29 @@ function TableComponent() {
       <Dialog
         visible={displayDialog}
         onHide={onHide}
-        header={isNew ? 'Thêm dịch vụ' : 'Cập nhật dịch vụ'}
+        header={isNew ? 'Thêm tiện ích' : 'Cập nhật tiện ích'}
         style={{ width: '70vw' }}
       >
         <div className="p-fluid">
           <div className="form-group">
-            <label htmlFor="serviceCode">Mã dịch vụ</label>
+            <label htmlFor="utilityCode">Mã tiện ích</label>
             <InputText
               disabled
-              id="serviceCode"
-              value={selectedData?.serviceCode || ''}
-              onChange={(e) => setSelectedData({ ...selectedData, serviceCode: e.target.value })}
+              id="utilityCode"
+              value={selectedData?.utilityCode || ''}
+              onChange={(e) => setSelectedData({ ...selectedData, utilityCode: e.target.value })}
               className="form-control"
             />
           </div>
           <div className="form-group">
-            <label htmlFor="serviceName">Tên dịch vụ</label>
+            <label htmlFor="utilityName">Tên tiện ích</label>
             <InputText
-              id="serviceName"
-              name="serviceName"
-              value={selectedData?.serviceName || ''}
-              onChange={handleChange}
-              className={`form-control ${errors.serviceName ? 'is-invalid' : ''}`}
+              id="utilityName"
+              value={selectedData?.utilityName || ''}
+              onChange={(e) => setSelectedData({ ...selectedData, utilityName: e.target.value })}
+              className={`form-control ${errors.utilityName ? 'is-invalid' : ''}`}
             />
-            <small className="invalid-feedback">{errors.serviceName}</small>
-          </div>
-          <div className="form-group">
-            <label htmlFor="servicePrice">Giá dịch vụ</label>
-            <InputText
-              id="servicePrice"
-              name="servicePrice"
-              type="number"
-              value={selectedData?.servicePrice || ''}
-              onChange={handleChange}
-              className={`form-control ${errors.servicePrice ? 'is-invalid' : ''}`}
-            />
-            <small className="invalid-feedback">{errors.servicePrice}</small>
-          </div>
-          <div className="form-group">
-            <label htmlFor="startDate">Ngày bắt đầu</label>
-            <InputText
-              id="startDate"
-              name="startDate"
-              type="date"
-              value={selectedData?.startDate || ''}
-              onChange={handleChange}
-              className={`form-control ${errors.startDate ? 'is-invalid' : ''}`}
-            />
-            <small className="invalid-feedback">{errors.startDate}</small>
-          </div>
-          <div className="form-group">
-            <label htmlFor="endDate">Ngày kết thúc</label>
-            <InputText
-              id="endDate"
-              name="endDate"
-              type="date"
-              value={selectedData?.endDate || ''}
-              onChange={handleChange}
-              className={`form-control ${errors.endDate ? 'is-invalid' : ''}`}
-            />
-            <small className="invalid-feedback">{errors.endDate}</small>
+            <small className="invalid-feedback">{errors.utilityName}</small>
           </div>
         </div>
         <div className="p-mt-4 d-flex justify-content-end">

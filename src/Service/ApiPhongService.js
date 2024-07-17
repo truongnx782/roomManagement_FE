@@ -1,12 +1,12 @@
-const ApiPhongService = {
-  async search(page, size, search, trangThai) {
+const ApiRoomService = {
+  async search(page, size, search, status) {
     try {
-      const response = await fetch('http://localhost:8080/phong/search', {
+      const response = await fetch('http://localhost:8080/room/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ page, size, search, trangThai }),
+        body: JSON.stringify({ page, size, search, status }),
       });
       if (!response.ok) {
         throw new Error('Failed to fetch data');
@@ -18,10 +18,9 @@ const ApiPhongService = {
     }
   },
   
-  
   async getById(id) {
     try {
-      const response = await fetch(`http://localhost:8080/phong/${id}`, {
+      const response = await fetch(`http://localhost:8080/room/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -36,9 +35,10 @@ const ApiPhongService = {
       throw error;
     }
   },
+  
   async update(id, dataToUpdate) {
     try {
-      const response = await fetch(`http://localhost:8080/phong/${id}`, {
+      const response = await fetch(`http://localhost:8080/room/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -54,9 +54,10 @@ const ApiPhongService = {
       throw error;
     }
   },
+  
   async create(data) {
     try {
-      const response = await fetch(`http://localhost:8080/phong`, {
+      const response = await fetch(`http://localhost:8080/room`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,13 +69,14 @@ const ApiPhongService = {
       }
       return response.json();
     } catch (error) {
-      console.error('Error createing data:', error);
+      console.error('Error creating data:', error);
       throw error;
     }
   },
+  
   async delete(id) {
     try {
-      const response = await fetch(`http://localhost:8080/phong/delete/${id}`, {
+      const response = await fetch(`http://localhost:8080/room/delete/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -85,11 +87,10 @@ const ApiPhongService = {
       }
       return response.json();
     } catch (error) {
-      console.error('Error deleteting data:', error);
+      console.error('Error deleting data:', error);
       throw error;
     }
   },
-
 };
 
-export default ApiPhongService;
+export default ApiRoomService;

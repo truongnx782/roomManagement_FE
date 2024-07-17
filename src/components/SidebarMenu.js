@@ -21,6 +21,11 @@ function SidebarMenu() {
               <i className="pi pi-cog mr-2"></i> Quản lý dịch vụ
             </a>
           </li>
+          <li className="nav-item">
+            <a href="http://localhost:3000/tien-ich/hien-thi" className="nav-link text-white">
+              <i className="pi pi-cog mr-2"></i> Quản lý tiện ích
+            </a>
+          </li>
         </ul>
       </div>
     );

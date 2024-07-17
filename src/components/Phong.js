@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ApiService from '../ApiPhongService';
+import ApiService from '../Service/ApiPhongService';
+import ApiPhong_TienIchService from '../Service/ApiPhong_TienIchService';
 import SidebarMenu from './SidebarMenu';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -9,6 +10,7 @@ import { InputText } from 'primereact/inputtext';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { Paginator } from 'primereact/paginator';
+import { MultiSelect } from 'primereact/multiselect';
 import '../css/style.css';
 
 function TableComponent() {
@@ -21,18 +23,41 @@ function TableComponent() {
   const [totalPages, setTotalPages] = useState(0);
   const [pageSize, setPageSize] = useState(5);
   const [search, setSearch] = useState('');
-  const [trangThai, setTrangThai] = useState(null);
+  const [status, setStatus] = useState(null);
   const toast = useRef(null);
+
+  const [utilitys, setUtilitys] = useState([]);
+  const [selectedUtility, setSelectedUtility] = useState([]);
 
   useEffect(() => {
     fetchData();
-  }, [page, pageSize, search, trangThai]);
+    fetchListUtility();
+  }, [page, pageSize, search, status]);
 
   const fetchData = async () => {
     try {
-      const response = await ApiService.search(page, pageSize, search, trangThai);
+      const response = await ApiService.search(page, pageSize, search, status);
       setData(response.content);
       setTotalPages(response.totalPages);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const fetchListUtility = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/utility/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ page: 0, size: 10, search: '', status: null }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      const data = await response.json();
+      setUtilitys(data.content);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -46,6 +71,8 @@ function TableComponent() {
   const edit = async (id) => {
     try {
       const result = await ApiService.getById(id);
+      const Room_Utility = await ApiPhong_TienIchService.getUtilityIdByRoomId(id);
+      setSelectedUtility(Room_Utility)
       setSelectedData(result);
       setDisplayDialog(true);
       setIsNew(false);
@@ -60,11 +87,32 @@ function TableComponent() {
         return;
       }
       if (isNew) {
-        await ApiService.create(selectedData);
-        showToast('success', 'Thành công', 'Thêm thành công.');
+        const createdData = await ApiService.create(selectedData);
+        const room = createdData.id;
+        const utilitys = selectedUtility;
+      
+        const dataToCreate = {
+          id: null,
+          room: room,
+          utilitys: utilitys,
+          status:1
+        };
+      
+        await ApiPhong_TienIchService.create(dataToCreate);
+        showToast('success', 'Thành công', 'Thêm mới thành công!.');
       } else {
         await ApiService.update(selectedData.id, selectedData);
-        showToast('success', 'Thành công', 'Cập nhật thành công.');
+        const room = selectedData.id;
+        const utilitys = selectedUtility;
+      
+        const dataToUpdate = {
+          id: null,
+          room: room,
+          utilitys: utilitys,
+          status:1
+        };
+        await ApiPhong_TienIchService.update(dataToUpdate);
+        showToast('success', 'Thành công', 'Cập nhật thành công!.');
       }
       fetchData();
       onHide();
@@ -85,7 +133,7 @@ function TableComponent() {
 
   const confirmDelete = (id) => {
     confirmDialog({
-      message: 'Bạn xác nhận đóng phòng này?',
+      message: 'Bạn có xác nhận đóng phòng?',
       header: 'Xác nhận',
       icon: 'pi pi-exclamation-triangle',
       rejectClassName: 'btn btn-secondary',
@@ -96,9 +144,9 @@ function TableComponent() {
     });
   };
 
-  const ConfirmSave = () => {
+  const confirmSave = () => {
     confirmDialog({
-      message: 'Xác nhận lưu phòng này?',
+      message: 'Bạn có xác nhận lưu phòng?',
       header: 'Xác nhận',
       icon: 'pi pi-exclamation-triangle',
       rejectClassName: 'btn btn-secondary',
@@ -118,14 +166,17 @@ function TableComponent() {
       <button
         type="button"
         className="btn btn-danger"
-        disabled={rowData.trangThaiThue === 1 || rowData.trangThai===0}
+        disabled={rowData.rentStatus === 1 || rowData.status === 0}
         onClick={() => confirmDelete(rowData.id)}>
         <i className="pi pi-trash mr-1"></i>
       </button>
-
     </div>
   );
 
+  const handleChange = (e) => {
+    setSelectedData({ ...selectedData, [e.target.name]: e.target.value });
+  };
+  
   const onHide = () => {
     setDisplayDialog(false);
     setSelectedData(null);
@@ -135,6 +186,7 @@ function TableComponent() {
 
   const openNew = () => {
     setSelectedData(null);
+    setSelectedUtility([])
     setDisplayDialog(true);
     setIsNew(true);
   };
@@ -143,23 +195,24 @@ function TableComponent() {
     let isValid = true;
     const errors = {};
 
-    if (!selectedData || !selectedData.tenPhong || selectedData.tenPhong.trim() === '') {
-      errors.tenPhong = 'Tên phòng không được để trống.';
+    if (!selectedData || !selectedData.roomName || selectedData.roomName.trim() === '') {
+      errors.roomName = 'Tên phòng không được để trống.';
       isValid = false;
     }
 
-    if (!selectedData || !selectedData.dienTich || selectedData.dienTich.trim() === '') {
-      errors.dienTich = 'Diện tích không được để trống.';
+    if (!selectedData || !selectedData.area || selectedData.area.trim() === '') {
+      errors.area = 'Diện tích không được để trống.';
       isValid = false;
     }
 
     if (
-      !selectedData || !selectedData.giaThue || isNaN(selectedData.giaThue) || selectedData.giaThue < 0) {
-      errors.giaThue = 'Giá thuê phải là một số không âm.';
+      !selectedData || !selectedData.rentPrice || isNaN(selectedData.rentPrice) || selectedData.rentPrice < 0
+    ) {
+      errors.rentPrice = 'Số tiền thuê không được để trống.';
       isValid = false;
     }
-    if (!selectedData || !selectedData.diaChi || selectedData.diaChi.trim() === '') {
-      errors.diaChi = 'Địa chỉ không được để trống.';
+    if (!selectedData || !selectedData.address || selectedData.address.trim() === '') {
+      errors.address = 'Địa chỉ không được để trống.';
       isValid = false;
     }
 
@@ -183,57 +236,57 @@ function TableComponent() {
                 <i className="pi pi-plus mr-1"></i> Thêm mới
               </Button>
 
-              {/* //SEARCH */}
+              {/* SEARCH */}
               <div className="d-flex align-items-center">
                 <InputText
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Tìm kiếm..."
+                  placeholder="Search..."
                   className="mr-2"
                 />
                 <div className="mr-2">
-                  <label className="mr-2">Trạng thái:</label>
+                  <label className="mr-2">Status:</label>
                   <div className="form-check form-check-inline">
                     <input
                       className="form-check-input"
                       type="radio"
-                      name="trangThai"
-                      id="trangThaiHoatDong"
+                      name="status"
+                      id="statusActive"
                       value={1}
-                      checked={trangThai === 1}
-                      onChange={() => setTrangThai(1)}
+                      checked={status === 1}
+                      onChange={() => setStatus(1)}
                     />
-                    <label className="form-check-label" htmlFor="trangThaiHoatDong">
-                      Hoạt Động
+                    <label className="form-check-label" htmlFor="statusActive">
+                      Active
                     </label>
                   </div>
                   <div className="form-check form-check-inline">
                     <input
                       className="form-check-input"
                       type="radio"
-                      name="trangThai"
-                      id="trangThaiDaDong"
+                      name="status"
+                      id="statusClosed"
                       value={0}
-                      checked={trangThai === 0}
-                      onChange={() => setTrangThai(0)}
+                      checked={status === 0}
+                      onChange={() => setStatus(0)}
                     />
-                    <label className="form-check-label" htmlFor="trangThaiDaDong">
-                      Đã Đóng
+                    <label className="form-check-label" htmlFor="statusClosed">
+                      Closed
                     </label>
                   </div>
                 </div>
               </div>
-
             </div>
             <div className="table-responsive">
+
               <DataTable value={data}>
-                <Column field="maPhong" header="Mã phòng" sortable style={{ width: '14%' }}></Column>
-                <Column field="tenPhong" header="Tên phòng" sortable style={{ width: '14%' }}></Column>
-                <Column field="dienTich" header="Diện tích" sortable style={{ width: '14%' }}></Column>
-                <Column field="giaThue" header="Giá thuê" sortable style={{ width: '14%' }}></Column>
-                <Column field="diaChi" header="Địa chỉ" sortable style={{ width: '14%' }}></Column>
+                <Column field="roomCode" header="Mã Phòng" sortable style={{ width: '14%' }}></Column>
+                <Column field="roomName" header="Tên phòng" sortable style={{ width: '14%' }}></Column>
+                <Column field="area" header="Diện tích" sortable style={{ width: '14%' }}></Column>
+                <Column field="rentPrice" header="Giá thuê" sortable style={{ width: '14%' }}></Column>
+                <Column field="address" header="Địa chỉ" sortable style={{ width: '14%' }}></Column>
                 <Column
-                  field="trangThaiThue"
+                  field="rentStatus"
                   header="Trạng thái thuê"
                   sortable
                   style={{ width: '14%' }}
@@ -241,25 +294,24 @@ function TableComponent() {
                     <span
                       style={{
                         color:
-                          rowData.trangThaiThue === 0
+                          rowData.rentStatus === 0
                             ? 'orange'
-                            : rowData.trangThaiThue === 1
+                            : rowData.rentStatus === 1
                               ? 'deepskyblue'
                               : 'inherit',
                         fontWeight: 'bold',
                       }}
                     >
-                      {rowData.trangThaiThue === 0
-                        ? 'Chưa cho thuê'
-                        : rowData.trangThaiThue === 1
-                          ? 'Đã cho thuê'
-                          : 'Không xác định'}
+                      {rowData.rentStatus === 0
+                        ? 'Trống'
+                        : rowData.rentStatus === 1
+                          ? 'Đã thuê'
+                          : 'Undefined'}
                     </span>
                   )}
                 ></Column>
-
                 <Column
-                  field="trangThai"
+                  field="status"
                   header="Trạng thái"
                   sortable
                   style={{ width: '14%' }}
@@ -267,25 +319,26 @@ function TableComponent() {
                     <span
                       style={{
                         color:
-                          rowData.trangThai === 0
+                          rowData.status === 0
                             ? 'red'
-                            : rowData.trangThai === 1
+                            : rowData.status === 1
                               ? 'green'
                               : 'inherit',
                         fontWeight: 'bold',
                       }}
                     >
-                      {rowData.trangThai === 0
-                        ? 'Đã đóng'
-                        : rowData.trangThai === 1
-                          ? 'Hoạt Động'
-                          : 'Không xác định'}
+                      {rowData.status === 0
+                        ? 'Đóng'
+                        : rowData.status === 1
+                          ? 'Hoạt động'
+                          : 'Undefined'}
                     </span>
                   )}
                 ></Column>
                 <Column body={action} header="Hành động" sortable style={{ width: '14%' }}></Column>
               </DataTable>
             </div>
+
             <Paginator
               first={page * pageSize}
               rows={pageSize}
@@ -297,71 +350,93 @@ function TableComponent() {
           </div>
         </div>
       </div>
+
       <Dialog
         visible={displayDialog}
         onHide={onHide}
-        header={isNew ? 'Thêm mới thông tin' : 'Cập nhật thông tin'}
+        header={isNew ? 'Add New Room Information' : 'Update Room Information'}
         style={{ width: '70vw' }}
       >
         <div className="p-fluid">
           <div className="form-group">
-            <label htmlFor="maPhong">Mã phòng</label>
+            <label htmlFor="roomCode">Mã phòng</label>
             <InputText
               disabled
-              id="maPhong"
-              value={selectedData?.maPhong || ''}
-              onChange={(e) => setSelectedData({ ...selectedData, maPhong: e.target.value })}
+              id="roomCode"
+              value={selectedData?.roomCode || ''}
+              onChange={handleChange}
               className="form-control"
             />
           </div>
           <div className="form-group">
-            <label htmlFor="tenPhong">Tên phòng</label>
+            <label htmlFor="roomName">Tên phòng</label>
             <InputText
-              id="tenPhong"
-              value={selectedData?.tenPhong || ''}
-              onChange={(e) => setSelectedData({ ...selectedData, tenPhong: e.target.value })}
-              className={`form-control ${errors.tenPhong ? 'is-invalid' : ''}`}
-            />
-            <small className="invalid-feedback">{errors.tenPhong}</small>
+            id="roomName"
+            name="roomName"
+            value={selectedData?.roomName || ''}
+            onChange={handleChange}
+            className={`form-control ${errors.roomName ? 'is-invalid' : ''}`}
+          />
+
+            <small className="invalid-feedback">{errors.roomName}</small>
           </div>
           <div className="form-group">
-            <label htmlFor="dienTich">Diện tích</label>
+            <label htmlFor="area">Diện tích</label>
             <InputText
-              id="dienTich"
-              value={selectedData?.dienTich || ''}
-              onChange={(e) => setSelectedData({ ...selectedData, dienTich: e.target.value })}
-              className={`form-control ${errors.dienTich ? 'is-invalid' : ''}`}
+              id="area"
+              name="area"
+              value={selectedData?.area || ''}
+              onChange={handleChange}
+              className={`form-control ${errors.area ? 'is-invalid' : ''}`}
             />
-            <small className="invalid-feedback">{errors.dienTich}</small>
+            <small className="invalid-feedback">{errors.area}</small>
           </div>
           <div className="form-group">
-            <label htmlFor="giaThue">Giá thuê</label>
+            <label htmlFor="rentPrice">Giá thuê</label>
             <InputText
-              id="giaThue"
-              value={selectedData?.giaThue || ''}
-              onChange={(e) => setSelectedData({ ...selectedData, giaThue: e.target.value })}
-              className={`form-control ${errors.giaThue ? 'is-invalid' : ''}`}
+              id="rentPrice"
+              name="rentPrice"
+              value={selectedData?.rentPrice || ''}
+              onChange={handleChange}
+              className={`form-control ${errors.rentPrice ? 'is-invalid' : ''}`}
             />
-            <small className="invalid-feedback">{errors.giaThue}</small>
+            <small className="invalid-feedback">{errors.rentPrice}</small>
           </div>
           <div className="form-group">
-            <label htmlFor="diaChi">Địa chỉ</label>
+            <label htmlFor="address">Địa chỉ</label>
             <InputText
-              id="diaChi"
-              value={selectedData?.diaChi || ''}
-              onChange={(e) => setSelectedData({ ...selectedData, diaChi: e.target.value })}
-              className={`form-control ${errors.diaChi ? 'is-invalid' : ''}`}
+              id="address"
+              name="address"
+              value={selectedData?.address || ''}
+              onChange={handleChange}
+              className={`form-control ${errors.address ? 'is-invalid' : ''}`}
             />
-            <small className="invalid-feedback">{errors.diaChi}</small>
+            <small className="invalid-feedback">{errors.address}</small>
           </div>
+          <div className="form-group">
+          {/* <label htmlFor="address">Tiện ích</label>
+            <MultiSelect value={selectedUtility} onChange={(e) => setSelectedUtility(e.value)}
+              options={utilitys} optionLabel="utilityName" optionValue="id" 
+              display="chip"
+              placeholder="Select Cities" maxSelectedLabels={3} className="w-full md:w-20rem" /> */}
+
+          <label htmlFor="address">Tiện ích</label>
+            <MultiSelect value={selectedUtility} onChange={(e) => setSelectedUtility(e.value)}
+            options={utilitys.map(option => ({label: option.utilityName, value: option.id}))} 
+              placeholder="Select Cities" maxSelectedLabels={3} className="w-full md:w-20rem" />
+
+          </div>
+
         </div>
         <div className="p-mt-4 d-flex justify-content-end">
-          <Button label="Hủy" onClick={onHide} className="btn btn-secondary" style={{ marginRight: '10px' }} />
-          <Button label="Lưu" onClick={ConfirmSave} className="btn btn-primary" />
+          <Button label="Huỷ" onClick={onHide} className="btn btn-secondary" style={{ marginRight: '10px' }} />
+          <Button label="Lưu" onClick={confirmSave} className="btn btn-primary" />
         </div>
       </Dialog>
+
       <Toast ref={toast} />
       <ConfirmDialog />
+
     </div>
   );
 }
