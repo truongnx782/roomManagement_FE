@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ApiService from '../Service/ApiPhongService';
+import ApiTienIchService from '../Service/ApiTienIchService'
 import ApiPhong_TienIchService from '../Service/ApiPhong_TienIchService';
 import ApiImageService from '../Service/ApiImageSercice';
 import SidebarMenu from './SidebarMenu';
@@ -32,6 +33,7 @@ function TableComponent() {
 
   const [utilitys, setUtilitys] = useState([]);
   const [selectedUtility, setSelectedUtility] = useState([]);
+  const [fetchedImages, setFetchedImages] = useState([])
 
   useEffect(() => {
     fetchData();
@@ -50,22 +52,13 @@ function TableComponent() {
 
   const fetchListUtility = async () => {
     try {
-      const response = await fetch('http://localhost:8080/utility/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ page: 0, size: 10, search: '', status: null }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch data');
-      }
-      const data = await response.json();
-      setUtilitys(data.content);
+      const response = await ApiTienIchService.search(page, pageSize, search, status);
+      setUtilitys(response.content);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+
 
   const onPageChange = (event) => {
     setPage(event.first / event.rows);
@@ -77,8 +70,9 @@ function TableComponent() {
       const result = await ApiService.getById(id);
       const Room_Utility = await ApiPhong_TienIchService.getUtilityIdByRoomId(id);
       const Images = await ApiImageService.getAllByRoomId(id);
+      setFetchedImages(Images)
 
-      console.log(Images)
+      setSelectedImages([])
       setSelectedUtility(Room_Utility)
       setSelectedData(result);
       setDisplayDialog(true);
@@ -97,14 +91,15 @@ function TableComponent() {
       setLoading(true);
 
       if (isNew) {
+        //create room
         const createdData = await ApiService.create(selectedData);
         const roomId = createdData.id;
         const utilities = selectedUtility;
 
-        // Tạo tiện ích cho phòng
+        //create utility
         await ApiPhong_TienIchService.create({ room: roomId, utilitys: utilities, status: 1 });
 
-        // Tải lên các ảnh đã chọn
+        //create image
         const formData = new FormData();
         formData.append('room', roomId);
         formData.append('status', 1);
@@ -116,14 +111,28 @@ function TableComponent() {
 
         showToast('success', 'Thành công', 'Thêm mới thành công!');
       } else {
-        // Cập nhật dữ liệu phòng
+        //update room
         await ApiService.update(selectedData.id, selectedData);
 
+        //update utility
         const roomId = selectedData.id;
         const utilities = selectedUtility;
-
-        // Cập nhật tiện ích cho phòng
         await ApiPhong_TienIchService.update({ room: roomId, utilitys: utilities, status: 1 });
+
+         //create image
+         const formData = new FormData();
+         formData.append('room', roomId);
+         formData.append('status', 1);
+ 
+         selectedImages.forEach((image) => {
+           formData.append('file', image);
+         });
+
+         fetchedImages.forEach((image)=>{
+          formData.append('image',image.id)
+         })
+         await ApiImageService.create(formData);
+
 
         showToast('success', 'Thành công', 'Cập nhật thành công!');
       }
@@ -194,9 +203,10 @@ function TableComponent() {
   const handleChange = (e) => {
     setSelectedData({ ...selectedData, [e.target.name]: e.target.value });
   };
+
   const handleImageChange = (event) => {
     const files = Array.from(event.target.files);
-    if (selectedImages.length + files.length > 10) {
+    if (fetchedImages.length + files.length > 9) {
       alert(`You can only upload up to 10 images.`);
       return;
     }
@@ -209,6 +219,13 @@ function TableComponent() {
     );
   };
 
+  const handleRemoveImagefetched = (imageId) => {
+    // Tạo một bản sao mới của fetchedImages mà loại bỏ ảnh có imageId tương ứng
+    const updatedImages = fetchedImages.filter(image => image.id !== imageId);
+    // Cập nhật fetchedImages với bản sao mới này
+    setFetchedImages(updatedImages);
+  };
+  
 
   const onHide = () => {
     setDisplayDialog(false);
@@ -221,6 +238,7 @@ function TableComponent() {
     setSelectedData(null);
     setSelectedUtility([])
     setSelectedImages([])
+    setFetchedImages([])
     setDisplayDialog(true);
     setIsNew(true);
   };
@@ -463,41 +481,76 @@ function TableComponent() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="images">Images</label>
-            <input
-              type="file"
-              id="images"
-              multiple
-              accept="image/*"
-              onChange={handleImageChange}
-              className="form-control"
-            />
-            <div className="image-preview mt-2 d-flex">
-              {selectedImages.map((image, index) => (
-                <div key={index} className="position-relative">
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt={`preview ${index}`}
-                    className="image-thumbnail"
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                      objectFit: 'cover',
-                      marginRight: '10px',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-danger btn-sm position-absolute"
-                    style={{ top: '5px', right: '5px' }}
-                    onClick={() => handleRemoveImage(index)}
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+  <label htmlFor="images">Images</label>
+  <input
+    type="file"
+    id="images"
+    multiple
+    accept="image/*"
+    onChange={handleImageChange}
+    className="form-control"
+  />
+  <div className="image-preview mt-2 d-flex">
+    {/* Render selected images */}
+    {selectedImages.map((image, index) => (
+      <div key={index} className="position-relative">
+        <a href={URL.createObjectURL(image)} target="_blank" rel="noopener noreferrer">
+          <img
+            src={URL.createObjectURL(image)}
+            alt={`preview ${index}`}
+            className="image-thumbnail"
+            style={{
+              width: '120px',
+              height: '120px',
+              objectFit: 'cover',
+              marginRight: '5px',
+              border: '2px solid #ffd700',
+              borderRadius: '2px',
+            }}
+          />
+        </a>
+        <button
+          type="button"
+          className="btn btn-danger btn-sm position-absolute"
+          style={{ top: '5px', right: '5px' }}
+          onClick={() => handleRemoveImage(index)}
+        >
+          &times;
+        </button>
+      </div>
+    ))}
+
+    {/* Render fetched images */}
+    {fetchedImages.map((imageData) => (
+      <div key={imageData.id} className="position-relative">
+        <a href={imageData.url} target="_blank" rel="noopener noreferrer">
+          <img
+            src={imageData.url}
+            alt={`fetched ${imageData.id}`}
+            className="image-thumbnail"
+            style={{
+              width: '120px',
+              height: '120px',
+              objectFit: 'cover',
+              marginRight: '5px',
+              border: '2px solid #4CAF50',
+              borderRadius: '2px',
+            }}
+          />
+        </a>
+        <button
+          type="button"
+          className="btn btn-danger btn-sm position-absolute"
+          style={{ top: '5px', right: '5px' }}
+          onClick={() => handleRemoveImagefetched(imageData.id)}
+        >
+          &times;
+        </button>
+      </div>
+    ))}
+  </div>
+</div>
+
 
         </div>
         <div className="p-mt-4 d-flex justify-content-end">
@@ -512,11 +565,6 @@ function TableComponent() {
           </div>
         )}
       </Dialog>
-
-
-
-  
-
 
       <Toast ref={toast} />
       <ConfirmDialog />
