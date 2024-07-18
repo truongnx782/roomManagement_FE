@@ -19,7 +19,7 @@ function TableComponent() {
   const [errors, setErrors] = useState({});
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(null);
   const toast = useRef(null);
@@ -185,47 +185,50 @@ function TableComponent() {
               </Button>
 
               {/* SEARCH */}
-              <div className="d-flex align-items-center">
-                <InputText
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search..."
-                  className="mr-2"
-                />
-                <div className="mr-2">
-                  <label className="mr-2">Status:</label>
-                  <div className="form-check form-check-inline">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="status"
-                      id="statusActive"
-                      value={1}
-                      checked={status === 1}
-                      onChange={() => setStatus(1)}
-                    />
-                    <label className="form-check-label" htmlFor="statusActive">
-                      Active
-                    </label>
-                  </div>
-                  <div className="form-check form-check-inline">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="status"
-                      id="statusClosed"
-                      value={0}
-                      checked={status === 0}
-                      onChange={() => setStatus(0)}
-                    />
-                    <label className="form-check-label" htmlFor="statusClosed">
-                      Closed
-                    </label>
+              <div className="card p-3 mb-3">
+                <div className="d-flex align-items-center">
+                  <InputText
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search..."
+                    className="mr-2"
+                  />
+                  <div className="mr-2">
+                    <label className="mr-2">Status:</label>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusActive"
+                        value={1}
+                        checked={status === 1}
+                        onChange={() => setStatus(1)}
+                      />
+                      <label className="form-check-label" htmlFor="statusActive">
+                        Active
+                      </label>
+                    </div>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusClosed"
+                        value={0}
+                        checked={status === 0}
+                        onChange={() => setStatus(0)}
+                      />
+                      <label className="form-check-label" htmlFor="statusClosed">
+                        Closed
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
+
             </div>
-            <div className="table-responsive">
+            <div className="table-container table-responsive">
               <DataTable value={data}>
                 <Column field="serviceCode" header="Mã dịch vụ" sortable style={{ width: '14%' }}></Column>
                 <Column field="serviceName" header="Tên dịch vụ" sortable style={{ width: '14%' }}></Column>
@@ -244,16 +247,16 @@ function TableComponent() {
                           rowData.status === 0
                             ? 'red'
                             : rowData.status === 1
-                            ? 'green'
-                            : 'inherit',
+                              ? 'green'
+                              : 'inherit',
                         fontWeight: 'bold',
                       }}
                     >
                       {rowData.status === 0
                         ? 'Đóng'
                         : rowData.status === 1
-                        ? 'Hoạt động'
-                        : 'Undefined'}
+                          ? 'Hoạt động'
+                          : 'Undefined'}
                     </span>
                   )}
                 ></Column>

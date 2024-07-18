@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ApiService from '../Service/ApiPhongService';
 import ApiPhong_TienIchService from '../Service/ApiPhong_TienIchService';
+import ApiImageService from '../Service/ApiImageSercice';
 import SidebarMenu from './SidebarMenu';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -21,10 +22,13 @@ function TableComponent() {
   const [errors, setErrors] = useState({});
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(null);
   const toast = useRef(null);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+
 
   const [utilitys, setUtilitys] = useState([]);
   const [selectedUtility, setSelectedUtility] = useState([]);
@@ -72,6 +76,9 @@ function TableComponent() {
     try {
       const result = await ApiService.getById(id);
       const Room_Utility = await ApiPhong_TienIchService.getUtilityIdByRoomId(id);
+      const Images = await ApiImageService.getAllByRoomId(id);
+
+      console.log(Images)
       setSelectedUtility(Room_Utility)
       setSelectedData(result);
       setDisplayDialog(true);
@@ -86,40 +93,51 @@ function TableComponent() {
       if (!validate()) {
         return;
       }
+
+      setLoading(true);
+
       if (isNew) {
         const createdData = await ApiService.create(selectedData);
-        const room = createdData.id;
-        const utilitys = selectedUtility;
-      
-        const dataToCreate = {
-          id: null,
-          room: room,
-          utilitys: utilitys,
-          status:1
-        };
-      
-        await ApiPhong_TienIchService.create(dataToCreate);
-        showToast('success', 'Thành công', 'Thêm mới thành công!.');
+        const roomId = createdData.id;
+        const utilities = selectedUtility;
+
+        // Tạo tiện ích cho phòng
+        await ApiPhong_TienIchService.create({ room: roomId, utilitys: utilities, status: 1 });
+
+        // Tải lên các ảnh đã chọn
+        const formData = new FormData();
+        formData.append('room', roomId);
+        formData.append('status', 1);
+
+        selectedImages.forEach((image) => {
+          formData.append('file', image);
+        });
+        await ApiImageService.create(formData);
+
+        showToast('success', 'Thành công', 'Thêm mới thành công!');
       } else {
+        // Cập nhật dữ liệu phòng
         await ApiService.update(selectedData.id, selectedData);
-        const room = selectedData.id;
-        const utilitys = selectedUtility;
-      
-        const dataToUpdate = {
-          id: null,
-          room: room,
-          utilitys: utilitys,
-          status:1
-        };
-        await ApiPhong_TienIchService.update(dataToUpdate);
-        showToast('success', 'Thành công', 'Cập nhật thành công!.');
+
+        const roomId = selectedData.id;
+        const utilities = selectedUtility;
+
+        // Cập nhật tiện ích cho phòng
+        await ApiPhong_TienIchService.update({ room: roomId, utilitys: utilities, status: 1 });
+
+        showToast('success', 'Thành công', 'Cập nhật thành công!');
       }
+
       fetchData();
       onHide();
     } catch (error) {
       console.error('Error updating data:', error);
     }
+    finally {
+      setLoading(false);
+    }
   };
+
 
   const remove = async (id) => {
     try {
@@ -176,7 +194,22 @@ function TableComponent() {
   const handleChange = (e) => {
     setSelectedData({ ...selectedData, [e.target.name]: e.target.value });
   };
-  
+  const handleImageChange = (event) => {
+    const files = Array.from(event.target.files);
+    if (selectedImages.length + files.length > 10) {
+      alert(`You can only upload up to 10 images.`);
+      return;
+    }
+    setSelectedImages((prevImages) => [...prevImages, ...files]);
+  };
+
+  const handleRemoveImage = (indexToRemove) => {
+    setSelectedImages((prevImages) =>
+      prevImages.filter((_, index) => index !== indexToRemove)
+    );
+  };
+
+
   const onHide = () => {
     setDisplayDialog(false);
     setSelectedData(null);
@@ -187,6 +220,7 @@ function TableComponent() {
   const openNew = () => {
     setSelectedData(null);
     setSelectedUtility([])
+    setSelectedImages([])
     setDisplayDialog(true);
     setIsNew(true);
   };
@@ -237,47 +271,50 @@ function TableComponent() {
               </Button>
 
               {/* SEARCH */}
-              <div className="d-flex align-items-center">
-                <InputText
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search..."
-                  className="mr-2"
-                />
-                <div className="mr-2">
-                  <label className="mr-2">Status:</label>
-                  <div className="form-check form-check-inline">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="status"
-                      id="statusActive"
-                      value={1}
-                      checked={status === 1}
-                      onChange={() => setStatus(1)}
-                    />
-                    <label className="form-check-label" htmlFor="statusActive">
-                      Active
-                    </label>
-                  </div>
-                  <div className="form-check form-check-inline">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="status"
-                      id="statusClosed"
-                      value={0}
-                      checked={status === 0}
-                      onChange={() => setStatus(0)}
-                    />
-                    <label className="form-check-label" htmlFor="statusClosed">
-                      Closed
-                    </label>
+              <div className="card p-3 mb-3">
+                <div className="d-flex align-items-center">
+                  <InputText
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search..."
+                    className="mr-2"
+                  />
+                  <div className="mr-2">
+                    <label className="mr-2">Status:</label>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusActive"
+                        value={1}
+                        checked={status === 1}
+                        onChange={() => setStatus(1)}
+                      />
+                      <label className="form-check-label" htmlFor="statusActive">
+                        Active
+                      </label>
+                    </div>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusClosed"
+                        value={0}
+                        checked={status === 0}
+                        onChange={() => setStatus(0)}
+                      />
+                      <label className="form-check-label" htmlFor="statusClosed">
+                        Closed
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="table-responsive">
+
+            <div className="table-responsive table-container">
 
               <DataTable value={data}>
                 <Column field="roomCode" header="Mã Phòng" sortable style={{ width: '14%' }}></Column>
@@ -344,12 +381,13 @@ function TableComponent() {
               rows={pageSize}
               totalRecords={totalPages * pageSize}
               onPageChange={onPageChange}
-              rowsPerPageOptions={[5, 10, 20]}
+              rowsPerPageOptions={[10, 15, 20]}
               className="p-mt-5"
             />
           </div>
         </div>
       </div>
+
 
       <Dialog
         visible={displayDialog}
@@ -371,13 +409,12 @@ function TableComponent() {
           <div className="form-group">
             <label htmlFor="roomName">Tên phòng</label>
             <InputText
-            id="roomName"
-            name="roomName"
-            value={selectedData?.roomName || ''}
-            onChange={handleChange}
-            className={`form-control ${errors.roomName ? 'is-invalid' : ''}`}
-          />
-
+              id="roomName"
+              name="roomName"
+              value={selectedData?.roomName || ''}
+              onChange={handleChange}
+              className={`form-control ${errors.roomName ? 'is-invalid' : ''}`}
+            />
             <small className="invalid-feedback">{errors.roomName}</small>
           </div>
           <div className="form-group">
@@ -396,6 +433,7 @@ function TableComponent() {
             <InputText
               id="rentPrice"
               name="rentPrice"
+              type="number"
               value={selectedData?.rentPrice || ''}
               onChange={handleChange}
               className={`form-control ${errors.rentPrice ? 'is-invalid' : ''}`}
@@ -414,17 +452,51 @@ function TableComponent() {
             <small className="invalid-feedback">{errors.address}</small>
           </div>
           <div className="form-group">
-          {/* <label htmlFor="address">Tiện ích</label>
-            <MultiSelect value={selectedUtility} onChange={(e) => setSelectedUtility(e.value)}
-              options={utilitys} optionLabel="utilityName" optionValue="id" 
-              display="chip"
-              placeholder="Select Cities" maxSelectedLabels={3} className="w-full md:w-20rem" /> */}
-
-          <label htmlFor="address">Tiện ích</label>
-            <MultiSelect value={selectedUtility} onChange={(e) => setSelectedUtility(e.value)}
-            options={utilitys.map(option => ({label: option.utilityName, value: option.id}))} 
-              placeholder="Select Cities" maxSelectedLabels={3} className="w-full md:w-20rem" />
-
+            <label htmlFor="address">Tiện ích</label>
+            <MultiSelect
+              value={selectedUtility}
+              onChange={(e) => setSelectedUtility(e.value)}
+              options={utilitys.map(option => ({ label: option.utilityName, value: option.id }))}
+              placeholder="Select Utilities"
+              maxSelectedLabels={3}
+              className="w-full md:w-20rem"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="images">Images</label>
+            <input
+              type="file"
+              id="images"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+              className="form-control"
+            />
+            <div className="image-preview mt-2 d-flex">
+              {selectedImages.map((image, index) => (
+                <div key={index} className="position-relative">
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt={`preview ${index}`}
+                    className="image-thumbnail"
+                    style={{
+                      width: '100px',
+                      height: '100px',
+                      objectFit: 'cover',
+                      marginRight: '10px',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-sm position-absolute"
+                    style={{ top: '5px', right: '5px' }}
+                    onClick={() => handleRemoveImage(index)}
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
         </div>
@@ -432,7 +504,19 @@ function TableComponent() {
           <Button label="Huỷ" onClick={onHide} className="btn btn-secondary" style={{ marginRight: '10px' }} />
           <Button label="Lưu" onClick={confirmSave} className="btn btn-primary" />
         </div>
+
+        {loading && (
+          <div className="text-center">
+            <i className="pi pi-spinner pi-spin" style={{ fontSize: '2rem' }}></i>
+            <p>Loading...</p>
+          </div>
+        )}
       </Dialog>
+
+
+
+  
+
 
       <Toast ref={toast} />
       <ConfirmDialog />
