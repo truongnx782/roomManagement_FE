@@ -5,4 +5,33 @@
     max-height: 510px; /* Adjust the height as needed */
     overflow-y: auto;
   }
+
+  .nav-link {
+    color: black;
+    font-size: 1.3rem;
+    display: block;
+    padding: 10px 20px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Transition for background and text color */
+  }
   
+  .nav-link:hover {
+    background-color: #80899579; /* Blue background on hover */
+    color: white; /* White text color on hover */
+  }
+
+
+/* Giảm khoảng cách giữa các dòng */
+.p-datatable .p-datatable-tbody > tr {
+  padding-bottom: 0.5rem; /* Giảm khoảng cách giữa các dòng */
+}
+
+/* Thêm vạch kẻ giữa các dòng */
+.p-datatable .p-datatable-tbody > tr {
+  border-bottom: 1px solid #ddd; /* Thêm vạch kẻ giữa các dòng */
+}
+
+/* Loại bỏ vạch kẻ dưới dòng cuối cùng */
+.p-datatable .p-datatable-tbody > tr:last-child {
+  border-bottom: none; /* Loại bỏ vạch kẻ dưới dòng cuối cùng */
+}

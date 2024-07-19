@@ -1,28 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import ApiService from '../Service/ApiTienIchService';
 import SidebarMenu from './SidebarMenu';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
-import { Toast } from 'primereact/toast';
-import { Paginator } from 'primereact/paginator';
-import '../css/style.css';
+import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
+import {  EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 function TableComponent() {
   const [data, setData] = useState([]);
   const [selectedData, setSelectedData] = useState(null);
-  const [displayDialog, setDisplayDialog] = useState(false);
   const [isNew, setIsNew] = useState(false);
   const [errors, setErrors] = useState({});
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(null);
-  const toast = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const { Option } = Select;
 
   useEffect(() => {
     fetchData();
@@ -30,27 +26,22 @@ function TableComponent() {
 
   const fetchData = async () => {
     try {
-      const response = await ApiService.search(page, pageSize, search, status);
+      const response = await ApiService.search(page - 1, pageSize, search, status);
       setData(response.content);
-      setTotalPages(response.totalPages);
+      setTotal(response.totalElements);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  };
-
-  const onPageChange = (event) => {
-    setPage(event.first / event.rows);
-    setPageSize(event.rows);
   };
 
   const edit = async (id) => {
     try {
       const result = await ApiService.getById(id);
       setSelectedData(result);
-      setDisplayDialog(true);
       setIsNew(false);
+      setModalVisible(true);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching details for edit:', error);
     }
   };
 
@@ -59,17 +50,20 @@ function TableComponent() {
       if (!validate()) {
         return;
       }
+      setLoading(true);
       if (isNew) {
         await ApiService.create(selectedData);
-        showToast('success', 'Thành công', 'Thêm mới thành công.');
+        message.success('Thêm mới thành công!');
       } else {
         await ApiService.update(selectedData.id, selectedData);
-        showToast('success', 'Thành công', 'Cập nhật thành công.');
+        message.success('Cập nhật thành công!');
       }
       fetchData();
-      onHide();
+      setModalVisible(false);
     } catch (error) {
-      console.error('Error updating data:', error);
+      console.error('Error saving data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,56 +71,36 @@ function TableComponent() {
     try {
       await ApiService.delete(id);
       fetchData();
-      showToast('success', 'Thành công', 'Đóng thành công!.');
+      message.success('Xoá thành công.');
     } catch (error) {
       console.error('Error deleting data:', error);
     }
   };
 
   const confirmDelete = (id) => {
-    confirmDialog({
-      message: 'Bạn có xác nhận đóng tiện ích?',
-      header: 'Xác nhận',
-      icon: 'pi pi-exclamation-triangle',
-      rejectClassName: 'btn btn-secondary',
-      acceptClassName: 'btn btn-danger ml-2',
-      acceptLabel: 'Xác nhận',
-      rejectLabel: 'Huỷ',
-      accept: () => remove(id),
+    Modal.confirm({
+      title: 'Xác nhận',
+      content: 'Bạn có chắc chắn muốn xoá tiện ích này?',
+      okText: 'Xác nhận',
+      okType: 'danger',
+      cancelText: 'Huỷ',
+      onOk: () => remove(id),
     });
   };
 
-  const ConfirmSave = () => {
-    confirmDialog({
-      message: 'Bạn có xác nhận lưu tiện ích',
-      header: 'Xác nhận',
-      icon: 'pi pi-exclamation-triangle',
-      rejectClassName: 'btn btn-secondary',
-      acceptClassName: 'btn btn-success ml-2',
-      acceptLabel: 'Xác nhận',
-      rejectLabel: 'Huỷ',
-      accept: () => save(),
+  const confirmSave = () => {
+    Modal.confirm({
+      title: 'Xác nhận',
+      content: 'Bạn có chắc chắn muốn lưu thông tin tiện ích này?',
+      okText: 'Xác nhận',
+      okType: 'primary',
+      cancelText: 'Huỷ',
+      onOk: () => save(),
     });
   };
-
-  const action = (rowData) => (
-    <div className="btn-group" role="group">
-      <button type="button" className="btn btn-warning" onClick={() => edit(rowData.id)}>
-        <i className="pi pi-pencil mr-1"></i>
-      </button>
-
-      <button
-        type="button"
-        className="btn btn-danger"
-        disabled={rowData.status === 0}
-        onClick={() => confirmDelete(rowData.id)}>
-        <i className="pi pi-trash mr-1"></i>
-      </button>
-    </div>
-  );
 
   const onHide = () => {
-    setDisplayDialog(false);
+    setModalVisible(false);
     setSelectedData(null);
     setIsNew(false);
     setErrors({});
@@ -134,8 +108,12 @@ function TableComponent() {
 
   const openNew = () => {
     setSelectedData(null);
-    setDisplayDialog(true);
+    setModalVisible(true);
     setIsNew(true);
+  };
+
+  const handleInputChange = (field) => (e) => {
+    setSelectedData((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
   const validate = () => {
@@ -151,142 +129,150 @@ function TableComponent() {
     return isValid;
   };
 
-  const showToast = (severity, summary, detail) => {
-    toast.current.show({ severity, summary, detail, life: 3000 });
-  };
+  const columns = [
+    {
+      title: 'Mã tiện ích',
+      dataIndex: 'utilityCode',
+      key: 'utilityCode',
+      sorter: (a, b) => a.utilityCode.localeCompare(b.utilityCode),
+      width: '14%',
+    },
+    {
+      title: 'Tên tiện ích',
+      dataIndex: 'utilityName',
+      key: 'utilityName',
+      sorter: (a, b) => a.utilityName.localeCompare(b.utilityName),
+      width: '14%',
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      sorter: (a, b) => a.status - b.status,
+      render: (value) => (
+        <span
+          style={{
+            color: value === 1 ? 'green' : 'red',
+            backgroundColor: value === 1 ? '#e6ffe6' : '#ffe6e6',
+            border: value === 1 ? '1px solid green' : '1px solid red',
+            borderRadius: '4px',
+            padding: '2px 8px',
+          }}
+        >
+          {value === 1 ? 'Hoạt động' : 'Ngưng hoạt động'}
+        </span>
+      ),
+      width: '14%',
+    },
+    {
+      title: 'Hành động',
+      dataIndex: 'id',
+      key:'id',
+      render: (value) => (  //value 
+        <div>
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => edit(value)}
+            style={{ marginRight: 10 }}
+          >
+            Sửa
+          </Button>
+
+          <Button
+            icon={<DeleteOutlined />}
+            onClick={() => confirmDelete(value)}
+            danger
+          >
+            Xoá
+          </Button>
+        </div>
+      ),
+      width: '15%',
+    },
+  ];
 
   return (
-    <div className="d-flex">
-      <SidebarMenu />
-      <div className="container-fluid p-4">
-        <h2 className="card-title mb-4 text-black d-flex justify-content-center"> QUẢN LÝ TIỆN ÍCH</h2>
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <Button onClick={openNew} className="btn btn-success">
-                <i className="pi pi-plus mr-1"></i> Thêm mới
-              </Button>
-
-              {/* SEARCH */}
-              <div className="d-flex align-items-center">
-                <InputText
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search..."
-                  className="mr-2"
-                />
-                <div className="mr-2">
-                  <label className="mr-2">Status:</label>
-                  <div className="form-check form-check-inline">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="status"
-                      id="statusActive"
-                      value={1}
-                      checked={status === 1}
-                      onChange={() => setStatus(1)}
-                    />
-                    <label className="form-check-label" htmlFor="statusActive">
-                      Active
-                    </label>
-                  </div>
-                  <div className="form-check form-check-inline">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="status"
-                      id="statusClosed"
-                      value={0}
-                      checked={status === 0}
-                      onChange={() => setStatus(0)}
-                    />
-                    <label className="form-check-label" htmlFor="statusClosed">
-                      Closed
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-            <div className="table-responsive">
-              <DataTable value={data}>
-                <Column field="utilityCode" header="Mã tiện ích" sortable style={{ width: '30%' }}></Column>
-                <Column field="utilityCode" header="Tên tiện ích" sortable style={{ width: '30%' }}></Column>
-                <Column
-                  field="status"
-                  header="Trạng thái"
-                  sortable
-                  style={{ width: '14%' }}
-                  body={(rowData) => (
-                    <span
-                      style={{
-                        color:
-                          rowData.status === 0
-                            ? 'red'
-                            : rowData.status === 1
-                            ? 'green'
-                            : 'inherit',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {rowData.status === 0
-                        ? 'Đóng'
-                        : rowData.status === 1
-                        ? 'Hoạt động'
-                        : 'Undefined'}
-                    </span>
-                  )}
-                ></Column>
-                <Column body={action} header="Hành động" sortable style={{ width: '30%' }}></Column>
-              </DataTable>
-            </div>
-            <Paginator
-              first={page * pageSize}
-              rows={pageSize}
-              totalRecords={totalPages * pageSize}
-              onPageChange={onPageChange}
-              rowsPerPageOptions={[5, 10, 20]}
-              className="p-mt-5"
-            />
+    <div style={{ width: '100%' }}>
+      <div style={{ width: '15%' }}>
+        <SidebarMenu />
+      </div>
+      <div style={{ marginLeft: '15%', width: '85%', padding: '16px' }}>
+        <div className="card shadow-sm card-body p-2 mb-3 mt-2" style={{ height: '7vh', width: '100%', display: 'flex' }}>
+          <div>
+            <p style={{ display: 'inline-block', margin: 0 }}>Quản lý danh mục/ </p>
+            <h6 style={{ display: 'inline-block', margin: 1 }}> Danh tiện ích</h6>
           </div>
+        </div>
+        <div className="card shadow-sm card-body ">
+          <div style={{ marginBottom: 20 }}>
+            <Button
+              type="primary"
+              onClick={openNew}>
+              Thêm mới tiện ích
+            </Button>
+            <Input
+              placeholder="Tìm kiếm..."
+              style={{ width: 200, marginLeft: 20 }}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Select
+              placeholder="Chọn trạng thái"
+              style={{ width: 200, marginLeft: 20 }}
+              value={status}
+              onChange={setStatus}
+            >
+              <Option value="">Tất cả</Option>
+              <Option value={1}>Hoạt động</Option>
+              <Option value={0}>Ngưng hoạt động</Option>
+            </Select>
+
+          </div>
+
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="id"
+            pagination={false}
+            scroll={{ y: 'calc(100vh - 39vh)' }}
+            className='table responsive'
+          />
+          <Pagination
+            current={page}
+            pageSize={pageSize}
+            total={total}
+            onChange={(page, pageSize) => {
+              setPage(page);
+              setPageSize(pageSize);
+            }}
+          />
+
+          <Modal
+            title={isNew ? 'Thêm mới tiện ích' : 'Chỉnh sửa tiện ích'}
+            open={modalVisible}
+            onCancel={onHide}
+            width="40vw"
+            footer={[
+              <Button key="back" onClick={onHide}>Hủy</Button>,
+              <Button key="submit" type="primary" loading={loading} onClick={confirmSave}>
+                Lưu
+              </Button>,
+            ]}
+          >
+            <form>
+              <div className="row">
+                  <label>Tên tiện ích</label>
+                  <Input
+                    value={selectedData?.utilityName || ''}
+                    onChange={handleInputChange('utilityName')}
+                    style={{ borderColor: errors.utilityName ? 'red' : '' }}
+                  />
+                 {errors.utilityName && <div style={{ color: 'red' }}>{errors.utilityName}</div>}
+              </div>
+            </form>
+          </Modal>
         </div>
       </div>
-      <Dialog
-        visible={displayDialog}
-        onHide={onHide}
-        header={isNew ? 'Thêm tiện ích' : 'Cập nhật tiện ích'}
-        style={{ width: '70vw' }}
-      >
-        <div className="p-fluid">
-          <div className="form-group">
-            <label htmlFor="utilityCode">Mã tiện ích</label>
-            <InputText
-              disabled
-              id="utilityCode"
-              value={selectedData?.utilityCode || ''}
-              onChange={(e) => setSelectedData({ ...selectedData, utilityCode: e.target.value })}
-              className="form-control"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="utilityName">Tên tiện ích</label>
-            <InputText
-              id="utilityName"
-              value={selectedData?.utilityName || ''}
-              onChange={(e) => setSelectedData({ ...selectedData, utilityName: e.target.value })}
-              className={`form-control ${errors.utilityName ? 'is-invalid' : ''}`}
-            />
-            <small className="invalid-feedback">{errors.utilityName}</small>
-          </div>
-        </div>
-        <div className="p-mt-4 d-flex justify-content-end">
-          <Button label="Huỷ" onClick={onHide} className="btn btn-secondary" style={{ marginRight: '10px' }} />
-          <Button label="Lưu" onClick={ConfirmSave} className="btn btn-primary" />
-        </div>
-      </Dialog>
-      <Toast ref={toast} />
-      <ConfirmDialog />
     </div>
   );
 }

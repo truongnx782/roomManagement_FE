@@ -1,28 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import ApiService from '../Service/ApiDichVuService';
 import SidebarMenu from './SidebarMenu';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
-import { Toast } from 'primereact/toast';
-import { Paginator } from 'primereact/paginator';
-import '../css/style.css';
+import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
+import {  EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 function TableComponent() {
   const [data, setData] = useState([]);
   const [selectedData, setSelectedData] = useState(null);
-  const [displayDialog, setDisplayDialog] = useState(false);
   const [isNew, setIsNew] = useState(false);
   const [errors, setErrors] = useState({});
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(null);
-  const toast = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const { Option } = Select;
 
   useEffect(() => {
     fetchData();
@@ -30,27 +26,22 @@ function TableComponent() {
 
   const fetchData = async () => {
     try {
-      const response = await ApiService.search(page, pageSize, search, status);
+      const response = await ApiService.search(page - 1, pageSize, search, status);
       setData(response.content);
-      setTotalPages(response.totalPages);
+      setTotal(response.totalElements);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  };
-
-  const onPageChange = (event) => {
-    setPage(event.first / event.rows);
-    setPageSize(event.rows);
   };
 
   const edit = async (id) => {
     try {
       const result = await ApiService.getById(id);
       setSelectedData(result);
-      setDisplayDialog(true);
       setIsNew(false);
+      setModalVisible(true);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching details for edit:', error);
     }
   };
 
@@ -59,17 +50,20 @@ function TableComponent() {
       if (!validate()) {
         return;
       }
+      setLoading(true);
       if (isNew) {
         await ApiService.create(selectedData);
-        showToast('success', 'Thành công', 'Thêm mới thành công.');
+        message.success('Thêm mới thành công!');
       } else {
         await ApiService.update(selectedData.id, selectedData);
-        showToast('success', 'Thành công', 'Cập nhật thành công.');
+        message.success('Cập nhật thành công!');
       }
       fetchData();
-      onHide();
+      setModalVisible(false);
     } catch (error) {
-      console.error('Error updating data:', error);
+      console.error('Error saving data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,60 +71,36 @@ function TableComponent() {
     try {
       await ApiService.delete(id);
       fetchData();
-      showToast('success', 'Thành công', 'Đóng thành công!.');
+      message.success('Xoá thành công.');
     } catch (error) {
       console.error('Error deleting data:', error);
     }
   };
 
   const confirmDelete = (id) => {
-    confirmDialog({
-      message: 'Bạn có xác nhận đóng phòng?',
-      header: 'Xác nhận',
-      icon: 'pi pi-exclamation-triangle',
-      rejectClassName: 'btn btn-secondary',
-      acceptClassName: 'btn btn-danger ml-2',
-      acceptLabel: 'Xác nhận',
-      rejectLabel: 'Huỷ',
-      accept: () => remove(id),
+    Modal.confirm({
+      title: 'Xác nhận',
+      content: 'Bạn có chắc chắn muốn xoá dịch vụ này?',
+      okText: 'Xác nhận',
+      okType: 'danger',
+      cancelText: 'Huỷ',
+      onOk: () => remove(id),
     });
   };
 
-  const ConfirmSave = () => {
-    confirmDialog({
-      message: 'Bạn có xác nhận lưu phòng',
-      header: 'Xác nhận',
-      icon: 'pi pi-exclamation-triangle',
-      rejectClassName: 'btn btn-secondary',
-      acceptClassName: 'btn btn-success ml-2',
-      acceptLabel: 'Xác nhận',
-      rejectLabel: 'Huỷ',
-      accept: () => save(),
+  const confirmSave = () => {
+    Modal.confirm({
+      title: 'Xác nhận',
+      content: 'Bạn có chắc chắn muốn lưu thông tin dịch vụ này?',
+      okText: 'Xác nhận',
+      okType: 'primary',
+      cancelText: 'Huỷ',
+      onOk: () => save(),
     });
-  };
-
-  const action = (rowData) => (
-    <div className="btn-group" role="group">
-      <button type="button" className="btn btn-warning" onClick={() => edit(rowData.id)}>
-        <i className="pi pi-pencil mr-1"></i>
-      </button>
-
-      <button
-        type="button"
-        className="btn btn-danger"
-        disabled={rowData.status === 0}
-        onClick={() => confirmDelete(rowData.id)}>
-        <i className="pi pi-trash mr-1"></i>
-      </button>
-    </div>
-  );
-
-  const handleChange = (e) => {
-    setSelectedData({ ...selectedData, [e.target.name]: e.target.value });
   };
 
   const onHide = () => {
-    setDisplayDialog(false);
+    setModalVisible(false);
     setSelectedData(null);
     setIsNew(false);
     setErrors({});
@@ -138,8 +108,12 @@ function TableComponent() {
 
   const openNew = () => {
     setSelectedData(null);
-    setDisplayDialog(true);
+    setModalVisible(true);
     setIsNew(true);
+  };
+
+  const handleInputChange = (field) => (e) => {
+    setSelectedData((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
   const validate = () => {
@@ -162,190 +136,228 @@ function TableComponent() {
     if (!selectedData || !selectedData.startDate) {
       errors.startDate = 'Ngày bắt đầu không được để trống.';
       isValid = false;
-    }
+  } else {
+      const startDate = new Date(selectedData.startDate);
+      const today = new Date();
+      if (startDate < today) {
+          errors.startDate = 'Ngày bắt đầu không được nhỏ hơn ngày hiện tại.';
+          isValid = false;
+      }
+      if (selectedData.endDate) {
+          const endDate = new Date(selectedData.endDate);
+          if (endDate < startDate) {
+              errors.endDate = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.';
+              isValid = false;
+          }
+      }
+  }
 
     setErrors(errors);
     return isValid;
   };
 
-  const showToast = (severity, summary, detail) => {
-    toast.current.show({ severity, summary, detail, life: 3000 });
-  };
+  const columns = [
+    {
+      title: 'Mã dịch vụ',
+      dataIndex: 'serviceCode',
+      key: 'serviceCode',
+      sorter: (a, b) => a.serviceCode.localeCompare(b.serviceCode),
+      width: '14%',
+    },
+    {
+      title: 'Tên dịch vụ',
+      dataIndex: 'serviceName',
+      key: 'serviceName',
+      sorter: (a, b) => a.serviceName.localeCompare(b.serviceName),
+      width: '14%',
+    },
+    {
+      title: 'Giá dịch vụ',
+      dataIndex: 'servicePrice',
+      key: 'servicePrice',
+      sorter: (a, b) => a.servicePrice - b.servicePrice,
+      width: '14%',
+    },
+
+    {
+      title: 'Ngày bắt đầu',
+      dataIndex: 'startDate',
+      key: 'startDate',
+      sorter: (a, b) => a.startDate - b.startDate,
+      width: '14%',
+    },
+    {
+      title: 'Ngày kết thúc',
+      dataIndex: 'endDate',
+      key: 'endDate',
+      sorter: (a, b) => a.endDate - b.endDate,
+      width: '14%',
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      sorter: (a, b) => a.status - b.status,
+      render: (value) => (
+        <span
+          style={{
+            color: value === 1 ? 'green' : 'red',
+            backgroundColor: value === 1 ? '#e6ffe6' : '#ffe6e6',
+            border: value === 1 ? '1px solid green' : '1px solid red',
+            borderRadius: '4px',
+            padding: '2px 8px',
+          }}
+        >
+          {value === 1 ? 'Hoạt động' : 'Ngưng hoạt động'}
+        </span>
+      ),
+      width: '14%',
+    },
+    {
+      title: 'Hành động',
+      key: 'action',
+      render: ( value) => (
+        <div>
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => edit(value.id)}
+            style={{ marginRight: 10 }}
+          >
+            Sửa
+          </Button>
+
+          <Button
+            icon={<DeleteOutlined />}
+            onClick={() => confirmDelete(value.id)}
+            danger
+          >
+            Xoá
+          </Button>
+        </div>
+      ),
+      width: '15%',
+    },
+  ];
 
   return (
-    <div className="d-flex">
-      <SidebarMenu />
-      <div className="container-fluid p-4">
-        <h2 className="card-title mb-4 text-black d-flex justify-content-center"> QUẢN LÝ DỊCH VỤ</h2>
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <Button onClick={openNew} className="btn btn-success">
-                <i className="pi pi-plus mr-1"></i> Thêm mới
-              </Button>
+    <div style={{ width: '100%' }}>
+      <div style={{ width: '15%' }}>
+        <SidebarMenu />
+      </div>
+      <div style={{ marginLeft: '15%', width: '85%', padding: '16px' }}>
+        <div className="card shadow-sm card-body p-2 mb-3 mt-2" style={{ height: '7vh', width: '100%', display: 'flex' }}>
+          <div>
+            <p style={{ display: 'inline-block', margin: 0 }}>Quản lý danh mục/ </p>
+            <h6 style={{ display: 'inline-block', margin: 1 }}> Danh dịch vụ</h6>
+          </div>
+        </div>
+        <div className="card shadow-sm card-body ">
+          <div style={{ marginBottom: 20 }}>
+            <Button
+              type="primary"
+              onClick={openNew}>
+              Thêm mới dịch vụ
+            </Button>
+            <Input
+              placeholder="Tìm kiếm..."
+              style={{ width: 200, marginLeft: 20 }}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Select
+              placeholder="Chọn trạng thái"
+              style={{ width: 200, marginLeft: 20 }}
+              value={status}
+              onChange={setStatus}
+            >
+              <Option value="">Tất cả</Option>
+              <Option value={1}>Hoạt động</Option>
+              <Option value={0}>Ngưng hoạt động</Option>
+            </Select>
 
-              {/* SEARCH */}
-              <div className="card p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <InputText
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search..."
-                    className="mr-2"
+          </div>
+
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="id"
+            pagination={false}
+            scroll={{ y: 'calc(100vh - 39vh)' }}
+            className='table responsive'
+          />
+          <Pagination
+            current={page}
+            pageSize={pageSize}
+            total={total}
+            onChange={(page, pageSize) => {
+              setPage(page);
+              setPageSize(pageSize);
+            }}
+          />
+
+          <Modal
+            title={isNew ? 'Thêm mới dịch vụ' : 'Chỉnh sửa dịch vụ'}
+            open={modalVisible}
+            onCancel={onHide}
+            width="70vw"
+            footer={[
+              <Button key="back" onClick={onHide}>Hủy</Button>,
+              <Button key="submit" type="primary" loading={loading} onClick={confirmSave}>
+                Lưu
+              </Button>,
+            ]}
+          >
+            <form>
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label>Tên dịch vụ</label>
+                  <Input
+                    value={selectedData?.serviceName || ''}
+                    onChange={handleInputChange('serviceName')}
+                    style={{ borderColor: errors.serviceName ? 'red' : '' }}
                   />
-                  <div className="mr-2">
-                    <label className="mr-2">Status:</label>
-                    <div className="form-check form-check-inline">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusActive"
-                        value={1}
-                        checked={status === 1}
-                        onChange={() => setStatus(1)}
-                      />
-                      <label className="form-check-label" htmlFor="statusActive">
-                        Active
-                      </label>
-                    </div>
-                    <div className="form-check form-check-inline">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusClosed"
-                        value={0}
-                        checked={status === 0}
-                        onChange={() => setStatus(0)}
-                      />
-                      <label className="form-check-label" htmlFor="statusClosed">
-                        Closed
-                      </label>
-                    </div>
-                  </div>
+                  {errors.serviceName && <div style={{ color: 'red' }}>{errors.serviceName}</div>}
+                </div>
+
+                <div className="col-md-6 mb-3">
+                  <label>Giá dịch vụ</label>
+                  <Input
+                    type="number"
+                    value={selectedData?.servicePrice || ''}
+                    onChange={handleInputChange('servicePrice')}
+                    style={{ borderColor: errors.servicePrice ? 'red' : '' }}
+                  />
+                  {errors.servicePrice && <div style={{ color: 'red' }}>{errors.servicePrice}</div>}
+                </div>
+
+                <div className="col-md-6 mb-3">
+                  <label>Ngày bắt đầu</label>
+                  <Input
+                    type="date"
+                    value={selectedData?.startDate || ''}
+                    onChange={handleInputChange('startDate')}
+                    style={{ borderColor: errors.startDate ? 'red' : '' }}
+                  />
+                  {errors.startDate && <div style={{ color: 'red' }}>{errors.startDate}</div>}
+                </div>
+
+                <div className="col-md-6 mb-3">
+                  <label>Ngày kết thúc</label>
+                  <Input
+                    type='date'
+                    value={selectedData?.endDate || ''}
+                    onChange={handleInputChange('endDate')}
+                    style={{ borderColor: errors.address ? 'red' : '' }}
+                  />
+                  {errors.endDate && <div style={{ color: 'red' }}>{errors.endDate}</div>}
                 </div>
               </div>
 
-            </div>
-            <div className="table-container table-responsive">
-              <DataTable value={data}>
-                <Column field="serviceCode" header="Mã dịch vụ" sortable style={{ width: '14%' }}></Column>
-                <Column field="serviceName" header="Tên dịch vụ" sortable style={{ width: '14%' }}></Column>
-                <Column field="servicePrice" header="Giá dịch vụ" sortable style={{ width: '14%' }}></Column>
-                <Column field="startDate" header="Ngày bắt đầu" sortable style={{ width: '14%' }}></Column>
-                <Column field="endDate" header="Ngày kết thúc" sortable style={{ width: '14%' }}></Column>
-                <Column
-                  field="status"
-                  header="Trạng thái"
-                  sortable
-                  style={{ width: '14%' }}
-                  body={(rowData) => (
-                    <span
-                      style={{
-                        color:
-                          rowData.status === 0
-                            ? 'red'
-                            : rowData.status === 1
-                              ? 'green'
-                              : 'inherit',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {rowData.status === 0
-                        ? 'Đóng'
-                        : rowData.status === 1
-                          ? 'Hoạt động'
-                          : 'Undefined'}
-                    </span>
-                  )}
-                ></Column>
-                <Column body={action} header="Hành động" sortable style={{ width: '14%' }}></Column>
-              </DataTable>
-            </div>
-            <Paginator
-              first={page * pageSize}
-              rows={pageSize}
-              totalRecords={totalPages * pageSize}
-              onPageChange={onPageChange}
-              rowsPerPageOptions={[5, 10, 20]}
-              className="p-mt-5"
-            />
-          </div>
+
+            </form>
+          </Modal>
         </div>
       </div>
-      <Dialog
-        visible={displayDialog}
-        onHide={onHide}
-        header={isNew ? 'Thêm dịch vụ' : 'Cập nhật dịch vụ'}
-        style={{ width: '70vw' }}
-      >
-        <div className="p-fluid">
-          <div className="form-group">
-            <label htmlFor="serviceCode">Mã dịch vụ</label>
-            <InputText
-              disabled
-              id="serviceCode"
-              value={selectedData?.serviceCode || ''}
-              onChange={(e) => setSelectedData({ ...selectedData, serviceCode: e.target.value })}
-              className="form-control"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="serviceName">Tên dịch vụ</label>
-            <InputText
-              id="serviceName"
-              name="serviceName"
-              value={selectedData?.serviceName || ''}
-              onChange={handleChange}
-              className={`form-control ${errors.serviceName ? 'is-invalid' : ''}`}
-            />
-            <small className="invalid-feedback">{errors.serviceName}</small>
-          </div>
-          <div className="form-group">
-            <label htmlFor="servicePrice">Giá dịch vụ</label>
-            <InputText
-              id="servicePrice"
-              name="servicePrice"
-              type="number"
-              value={selectedData?.servicePrice || ''}
-              onChange={handleChange}
-              className={`form-control ${errors.servicePrice ? 'is-invalid' : ''}`}
-            />
-            <small className="invalid-feedback">{errors.servicePrice}</small>
-          </div>
-          <div className="form-group">
-            <label htmlFor="startDate">Ngày bắt đầu</label>
-            <InputText
-              id="startDate"
-              name="startDate"
-              type="date"
-              value={selectedData?.startDate || ''}
-              onChange={handleChange}
-              className={`form-control ${errors.startDate ? 'is-invalid' : ''}`}
-            />
-            <small className="invalid-feedback">{errors.startDate}</small>
-          </div>
-          <div className="form-group">
-            <label htmlFor="endDate">Ngày kết thúc</label>
-            <InputText
-              id="endDate"
-              name="endDate"
-              type="date"
-              value={selectedData?.endDate || ''}
-              onChange={handleChange}
-              className={`form-control ${errors.endDate ? 'is-invalid' : ''}`}
-            />
-            <small className="invalid-feedback">{errors.endDate}</small>
-          </div>
-        </div>
-        <div className="p-mt-4 d-flex justify-content-end">
-          <Button label="Huỷ" onClick={onHide} className="btn btn-secondary" style={{ marginRight: '10px' }} />
-          <Button label="Lưu" onClick={ConfirmSave} className="btn btn-primary" />
-        </div>
-      </Dialog>
-      <Toast ref={toast} />
-      <ConfirmDialog />
     </div>
   );
 }
