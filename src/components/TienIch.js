@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ApiService from '../Service/ApiTienIchService';
 import SidebarMenu from './SidebarMenu';
 import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
-import {  EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined ,RetweetOutlined} from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -77,6 +77,16 @@ function TableComponent() {
     }
   };
 
+  const restore = async (id) => {
+    try {
+      await ApiService.restore(id);
+      fetchData();
+      message.success('Khôi phục thành công.');
+    } catch (error) {
+      console.error('Error restore data:', error);
+    }
+  };
+
   const confirmDelete = (id) => {
     Modal.confirm({
       title: 'Xác nhận',
@@ -85,6 +95,17 @@ function TableComponent() {
       okType: 'danger',
       cancelText: 'Huỷ',
       onOk: () => remove(id),
+    });
+  };
+
+  const confirmRestore = (id) => {
+    Modal.confirm({
+      title: 'Xác nhận',
+      content: 'Bạn có chắc chắn muốn khôi ơhujc tiện ích này?',
+      okText: 'Xác nhận',
+      okType: 'primary',
+      cancelText: 'Huỷ',
+      onOk: () => restore(id),
     });
   };
 
@@ -166,25 +187,27 @@ function TableComponent() {
     },
     {
       title: 'Hành động',
-      dataIndex: 'id',
-      key:'id',
+      key: 'action',
       render: (value) => (  //value 
         <div>
           <Button
             icon={<EditOutlined />}
-            onClick={() => edit(value)}
-            style={{ marginRight: 10 }}
-          >
-            Sửa
+            onClick={() => edit(value.id)}
+            style={{ marginRight: 10 }}>
           </Button>
 
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => confirmDelete(value)}
-            danger
-          >
-            Xoá
-          </Button>
+          {value.status === 0 ? (
+            <Button
+              icon={<RetweetOutlined />}
+              onClick={() => confirmRestore(value.id)}  >
+            </Button>
+          ) : (
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => confirmDelete(value.id)}
+              danger >
+            </Button>
+          )}
         </div>
       ),
       width: '15%',
@@ -241,6 +264,8 @@ function TableComponent() {
             current={page}
             pageSize={pageSize}
             total={total}
+            showSizeChanger
+            pageSizeOptions={['10', '20', '50']}
             onChange={(page, pageSize) => {
               setPage(page);
               setPageSize(pageSize);
@@ -261,13 +286,13 @@ function TableComponent() {
           >
             <form>
               <div className="row">
-                  <label>Tên tiện ích</label>
-                  <Input
-                    value={selectedData?.utilityName || ''}
-                    onChange={handleInputChange('utilityName')}
-                    style={{ borderColor: errors.utilityName ? 'red' : '' }}
-                  />
-                 {errors.utilityName && <div style={{ color: 'red' }}>{errors.utilityName}</div>}
+                <label>Tên tiện ích</label>
+                <Input
+                  value={selectedData?.utilityName || ''}
+                  onChange={handleInputChange('utilityName')}
+                  style={{ borderColor: errors.utilityName ? 'red' : '' }}
+                />
+                {errors.utilityName && <div style={{ color: 'red' }}>{errors.utilityName}</div>}
               </div>
             </form>
           </Modal>

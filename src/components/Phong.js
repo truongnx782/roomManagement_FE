@@ -4,8 +4,8 @@ import ApiTienIchService from '../Service/ApiTienIchService';
 import ApiPhong_TienIchService from '../Service/ApiPhong_TienIchService';
 import ApiImageService from '../Service/ApiImageSercice';
 import SidebarMenu from './SidebarMenu';
-import { Table, Button, Input, Modal, Select, Pagination, message, Flex } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
+import { EditOutlined, DeleteOutlined ,RetweetOutlined} from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -135,6 +135,16 @@ function TableComponent() {
     }
   };
 
+  const restore = async (id) => {
+    try {
+      await ApiService.restore(id);
+      fetchData();
+      message.success('Khôi phục thành công.');
+    } catch (error) {
+      console.error('Error deleting data:', error);
+    }
+  };
+
   const confirmDelete = (id) => {
     Modal.confirm({
       title: 'Xác nhận',
@@ -143,6 +153,17 @@ function TableComponent() {
       okType: 'danger',
       cancelText: 'Huỷ',
       onOk: () => remove(id),
+    });
+  };
+
+  const confirmRestore = (id) => {
+    Modal.confirm({
+      title: 'Xác nhận',
+      content: 'Bạn có chắc chắn muốn khôi phục phòng này?',
+      okText: 'Xác nhận',
+      okType: 'primary',
+      cancelText: 'Huỷ',
+      onOk: () => restore(id),
     });
   };
 
@@ -276,14 +297,14 @@ function TableComponent() {
         <span
           style={{
             color:
-            value === 0 ? 'orange' :
-            value === 1 ? 'deepskyblue' : 'inherit',
+              value === 0 ? 'orange' :
+                value === 1 ? 'deepskyblue' : 'inherit',
             backgroundColor:
-            value === 0 ? '#f5f5f5' :
-            value === 1 ? '#e6f7ff' : 'inherit',
+              value === 0 ? '#f5f5f5' :
+                value === 1 ? '#e6f7ff' : 'inherit',
             border:
-            value === 0 ? '1px solid orange' :
-            value === 1 ? '1px solid deepskyblue' : '1px solid gray',
+              value === 0 ? '1px solid orange' :
+                value === 1 ? '1px solid deepskyblue' : '1px solid gray',
             borderRadius: '4px',
             padding: '2px 8px',
           }}
@@ -316,21 +337,26 @@ function TableComponent() {
     {
       title: 'Hành động',
       key: 'action',
-      render: ( value) => (
+      render: (value) => (
         <div>
           <Button
             icon={<EditOutlined />}
             onClick={() => edit(value.id)}
             style={{ marginRight: 10 }}>
-            Sửa
           </Button>
 
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => confirmDelete(value.id)}
-            danger>
-            Xoá
-          </Button>
+          {value.status === 0 ? (
+            <Button
+              icon={<RetweetOutlined />}
+              onClick={() => confirmRestore(value.id)}  >
+            </Button>
+          ) : (
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => confirmDelete(value.id)}
+              danger >
+            </Button>
+          )}
         </div>
       ),
       width: '16%',
@@ -343,7 +369,7 @@ function TableComponent() {
       <div style={{ width: '15%' }}>
         <SidebarMenu />
       </div>
-      <div style={{ marginLeft: '15%', width: '85%', padding: '16px'  }}>
+      <div style={{ marginLeft: '15%', width: '85%', padding: '16px' }}>
         <div className="card shadow-sm card-body p-2 mb-3 mt-2" style={{ height: '7vh', width: '100%', display: 'flex' }}>
           <div>
             <p style={{ display: 'inline-block', margin: 0 }}>Quản lý danh mục/ </p>
@@ -387,6 +413,8 @@ function TableComponent() {
             current={page}
             pageSize={pageSize}
             total={total}
+            showSizeChanger
+            pageSizeOptions={['10', '20', '50']}
             onChange={(page, pageSize) => {
               setPage(page);
               setPageSize(pageSize);

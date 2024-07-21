@@ -1,7 +1,7 @@
-const ApiTienIchService = {
+const ApiKhachHangService = {
     async search(page, size, search, status) {
       try {
-        const response = await fetch('http://localhost:8080/utility/search', {
+        const response = await fetch('http://localhost:8080/customer/search', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -19,7 +19,7 @@ const ApiTienIchService = {
     },
     async getAll() {
       try {
-        const response = await fetch('http://localhost:8080/utility', {
+        const response = await fetch('http://localhost:8080/customer', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ const ApiTienIchService = {
     
     async getById(id) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/${id}`, {
+        const response = await fetch(`http://localhost:8080/customer/${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ const ApiTienIchService = {
     
     async update(id, dataToUpdate) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/${id}`, {
+        const response = await fetch(`http://localhost:8080/customer/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ const ApiTienIchService = {
     
     async create(data) {
       try {
-        const response = await fetch(`http://localhost:8080/utility`, {
+        const response = await fetch(`http://localhost:8080/customer`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const ApiTienIchService = {
     
     async delete(id) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/delete/${id}`, {
+        const response = await fetch(`http://localhost:8080/customer/delete/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -108,9 +108,10 @@ const ApiTienIchService = {
         throw error;
       }
     },
+
     async restore(id) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/restore/${id}`, {
+        const response = await fetch(`http://localhost:8080/customer/restore/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -125,8 +126,10 @@ const ApiTienIchService = {
         throw error;
       }
     },
-
+    
   };
+
   
-  export default ApiTienIchService;
+  
+  export default ApiKhachHangService;
   

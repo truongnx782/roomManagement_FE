@@ -91,6 +91,24 @@ const ApiDichVuService = {
         throw error;
       }
     },
+
+    async restore(id) {
+      try {
+        const response = await fetch(`http://localhost:8080/service/restore/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to restore data');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Error restore data:', error);
+        throw error;
+      }
+    },
   };
   
   

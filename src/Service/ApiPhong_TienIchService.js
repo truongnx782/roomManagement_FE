@@ -18,8 +18,6 @@ const ApiPhong_TienIchService = {
         }
     },
 
-
-
     async getUtilityIdByRoomId(id) {
         try {
             const response = await fetch(`http://localhost:8080/room-utility/get-utility-id-by-room-id/${id}`, {

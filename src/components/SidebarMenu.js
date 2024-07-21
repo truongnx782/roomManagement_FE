@@ -3,11 +3,10 @@ import { Menu, Switch, Divider } from 'antd';
 import {
   AppstoreOutlined,
   CalendarOutlined,
-  LinkOutlined,
   MailOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
-import 'antd/dist/reset.css'; // Import Ant Design styles
-import '../css/style.css'; // Import custom styles
+import 'antd/dist/reset.css'; 
 
 const items = [
   {
@@ -27,6 +26,13 @@ const items = [
     icon: <AppstoreOutlined />,
     label: 'QL Tiện ích',
     link: 'http://localhost:3000/tien-ich/hien-thi',
+ }
+ ,
+  {
+    key: '8',
+    icon: <UnorderedListOutlined />,
+    label: 'QL Khách hàng',
+    link: 'http://localhost:3000/khach-hang/hien-thi',
  }
   ,
   // {

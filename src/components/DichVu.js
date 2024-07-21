@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ApiService from '../Service/ApiDichVuService';
 import SidebarMenu from './SidebarMenu';
 import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
-import {  EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined ,RetweetOutlined} from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -77,6 +77,16 @@ function TableComponent() {
     }
   };
 
+  const restore = async (id) => {
+    try {
+      await ApiService.restore(id);
+      fetchData();
+      message.success('Khôi phục thành công.');
+    } catch (error) {
+      console.error('Error restore data:', error);
+    }
+  };
+
   const confirmDelete = (id) => {
     Modal.confirm({
       title: 'Xác nhận',
@@ -85,6 +95,17 @@ function TableComponent() {
       okType: 'danger',
       cancelText: 'Huỷ',
       onOk: () => remove(id),
+    });
+  };
+
+  const confirmRestore = (id) => {
+    Modal.confirm({
+      title: 'Xác nhận',
+      content: 'Bạn có chắc chắn muốn khôi phục dịch vụ này?',
+      okText: 'Xác nhận',
+      okType: 'primary',
+      cancelText: 'Huỷ',
+      onOk: () => restore(id),
     });
   };
 
@@ -136,21 +157,21 @@ function TableComponent() {
     if (!selectedData || !selectedData.startDate) {
       errors.startDate = 'Ngày bắt đầu không được để trống.';
       isValid = false;
-  } else {
+    } else {
       const startDate = new Date(selectedData.startDate);
       const today = new Date();
       if (startDate < today) {
-          errors.startDate = 'Ngày bắt đầu không được nhỏ hơn ngày hiện tại.';
-          isValid = false;
+        errors.startDate = 'Ngày bắt đầu không được nhỏ hơn ngày hiện tại.';
+        isValid = false;
       }
       if (selectedData.endDate) {
-          const endDate = new Date(selectedData.endDate);
-          if (endDate < startDate) {
-              errors.endDate = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.';
-              isValid = false;
-          }
+        const endDate = new Date(selectedData.endDate);
+        if (endDate < startDate) {
+          errors.endDate = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.';
+          isValid = false;
+        }
       }
-  }
+    }
 
     setErrors(errors);
     return isValid;
@@ -216,23 +237,26 @@ function TableComponent() {
     {
       title: 'Hành động',
       key: 'action',
-      render: ( value) => (
+      render: (value) => (
         <div>
           <Button
             icon={<EditOutlined />}
             onClick={() => edit(value.id)}
-            style={{ marginRight: 10 }}
-          >
-            Sửa
+            style={{ marginRight: 10 }}>
           </Button>
 
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => confirmDelete(value.id)}
-            danger
-          >
-            Xoá
-          </Button>
+          {value.status === 0 ? (
+            <Button
+              icon={<RetweetOutlined />}
+              onClick={() => confirmRestore(value.id)}  >
+            </Button>
+          ) : (
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => confirmDelete(value.id)}
+              danger >
+            </Button>
+          )}
         </div>
       ),
       width: '15%',
@@ -289,11 +313,14 @@ function TableComponent() {
             current={page}
             pageSize={pageSize}
             total={total}
+            showSizeChanger
+            pageSizeOptions={['10', '20', '50']}
             onChange={(page, pageSize) => {
               setPage(page);
               setPageSize(pageSize);
             }}
           />
+
 
           <Modal
             title={isNew ? 'Thêm mới dịch vụ' : 'Chỉnh sửa dịch vụ'}
@@ -352,8 +379,6 @@ function TableComponent() {
                   {errors.endDate && <div style={{ color: 'red' }}>{errors.endDate}</div>}
                 </div>
               </div>
-
-
             </form>
           </Modal>
         </div>
