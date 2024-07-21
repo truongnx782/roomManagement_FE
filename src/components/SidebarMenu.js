@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Switch, Divider } from 'antd';
+import { Menu } from 'antd';
 import {
   AppstoreOutlined,
   CalendarOutlined,
@@ -7,6 +7,7 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import 'antd/dist/reset.css'; 
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const items = [
   {
@@ -26,41 +27,13 @@ const items = [
     icon: <AppstoreOutlined />,
     label: 'QL Tiện ích',
     link: 'http://localhost:3000/tien-ich/hien-thi',
- }
- ,
+  },
   {
     key: '8',
     icon: <UnorderedListOutlined />,
     label: 'QL Khách hàng',
     link: 'http://localhost:3000/khach-hang/hien-thi',
- }
-  ,
-  // {
-  //   key: 'sub1',
-  //   icon: <AppstoreOutlined />,
-  //   label: 'QL Tiện ích',
-  //   children: [
-  //     { key: '3', label: 'Option 3' },
-  //     { key: '4', label: 'Option 4' },
-  //     {
-  //       key: 'sub1-2',
-  //       label: 'Submenu',
-  //       children: [
-  //         { key: '5', label: 'Option 5' },
-  //         { key: '6', label: 'Option 6' },
-  //       ],
-  //     },
-  //   ],
-  // },
-  // {
-  //   key: 'link',
-  //   icon: <LinkOutlined />,
-  //   label: (
-  //     <a href="" target="_blank" rel="noopener noreferrer">
-  //       Ant Design
-  //     </a>
-  //   ),
-  // },
+  },
 ];
 
 const SidebarMenu = () => {
@@ -108,9 +81,8 @@ const SidebarMenu = () => {
         >
           Menu
         </h4>
-        <div style={{ marginBottom: '16px' }}>
-          <Divider type="vertical" />
-          <Switch onChange={changeTheme} /> Change Style
+        <div style={{ marginBottom: '16px' }} className='d-flex justify-content-center'>
+          <h4> Xin chào !</h4>
         </div>
         <Menu
           style={{ flex: 1, border: 'none' }}
@@ -125,12 +97,6 @@ const SidebarMenu = () => {
             ) : (
               item.label
             ),
-            children: item.children?.map((child) => ({
-              ...child,
-              children: child.children?.map((subChild) => ({
-                ...subChild,
-              })),
-            })),
           }))}
           onClick={handleClick}
         />

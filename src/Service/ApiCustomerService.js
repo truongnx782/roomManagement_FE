@@ -1,4 +1,4 @@
-const ApiKhachHangService = {
+const ApiCustomerService = {
     async search(page, size, search, status) {
       try {
         const response = await fetch('http://localhost:8080/customer/search', {
@@ -131,5 +131,5 @@ const ApiKhachHangService = {
 
   
   
-  export default ApiKhachHangService;
+  export default ApiCustomerService;
   

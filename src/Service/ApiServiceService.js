@@ -1,7 +1,7 @@
-const ApiTienIchService = {
+const ApiServiceService = {
     async search(page, size, search, status) {
       try {
-        const response = await fetch('http://localhost:8080/utility/search', {
+        const response = await fetch('http://localhost:8080/service/search', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -17,27 +17,10 @@ const ApiTienIchService = {
         throw error;
       }
     },
-    async getAll() {
-      try {
-        const response = await fetch('http://localhost:8080/utility', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
-        }
-        return response.json();
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        throw error;
-      }
-    },
-    
+  
     async getById(id) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/${id}`, {
+        const response = await fetch(`http://localhost:8080/service/${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -52,10 +35,10 @@ const ApiTienIchService = {
         throw error;
       }
     },
-    
+  
     async update(id, dataToUpdate) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/${id}`, {
+        const response = await fetch(`http://localhost:8080/service/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -71,10 +54,10 @@ const ApiTienIchService = {
         throw error;
       }
     },
-    
+  
     async create(data) {
       try {
-        const response = await fetch(`http://localhost:8080/utility`, {
+        const response = await fetch(`http://localhost:8080/service`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -90,10 +73,10 @@ const ApiTienIchService = {
         throw error;
       }
     },
-    
+  
     async delete(id) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/delete/${id}`, {
+        const response = await fetch(`http://localhost:8080/service/delete/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -108,9 +91,10 @@ const ApiTienIchService = {
         throw error;
       }
     },
+
     async restore(id) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/restore/${id}`, {
+        const response = await fetch(`http://localhost:8080/service/restore/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -125,8 +109,7 @@ const ApiTienIchService = {
         throw error;
       }
     },
-
   };
   
-  export default ApiTienIchService;
   
+export default ApiServiceService;

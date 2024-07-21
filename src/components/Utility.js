@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ApiService from '../Service/ApiTienIchService';
+import ApiService from '../Service/ApiUtilityService';
 import SidebarMenu from './SidebarMenu';
 import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
 import { EditOutlined, DeleteOutlined ,RetweetOutlined} from '@ant-design/icons';
@@ -199,7 +199,8 @@ function TableComponent() {
           {value.status === 0 ? (
             <Button
               icon={<RetweetOutlined />}
-              onClick={() => confirmRestore(value.id)}  >
+              style={{ color  : 'blue', borderColor:'blue' }}
+              onClick={() => confirmRestore(value.id)}>
             </Button>
           ) : (
             <Button

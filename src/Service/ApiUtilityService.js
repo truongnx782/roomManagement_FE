@@ -1,7 +1,7 @@
-const ApiDichVuService = {
+const ApiUtilityService = {
     async search(page, size, search, status) {
       try {
-        const response = await fetch('http://localhost:8080/service/search', {
+        const response = await fetch('http://localhost:8080/utility/search', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -17,10 +17,9 @@ const ApiDichVuService = {
         throw error;
       }
     },
-  
-    async getById(id) {
+    async getAll() {
       try {
-        const response = await fetch(`http://localhost:8080/service/${id}`, {
+        const response = await fetch('http://localhost:8080/utility', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -35,10 +34,28 @@ const ApiDichVuService = {
         throw error;
       }
     },
-  
+    
+    async getById(id) {
+      try {
+        const response = await fetch(`http://localhost:8080/utility/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        throw error;
+      }
+    },
+    
     async update(id, dataToUpdate) {
       try {
-        const response = await fetch(`http://localhost:8080/service/${id}`, {
+        const response = await fetch(`http://localhost:8080/utility/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -54,10 +71,10 @@ const ApiDichVuService = {
         throw error;
       }
     },
-  
+    
     async create(data) {
       try {
-        const response = await fetch(`http://localhost:8080/service`, {
+        const response = await fetch(`http://localhost:8080/utility`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -73,10 +90,10 @@ const ApiDichVuService = {
         throw error;
       }
     },
-  
+    
     async delete(id) {
       try {
-        const response = await fetch(`http://localhost:8080/service/delete/${id}`, {
+        const response = await fetch(`http://localhost:8080/utility/delete/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -91,10 +108,9 @@ const ApiDichVuService = {
         throw error;
       }
     },
-
     async restore(id) {
       try {
-        const response = await fetch(`http://localhost:8080/service/restore/${id}`, {
+        const response = await fetch(`http://localhost:8080/utility/restore/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -109,7 +125,8 @@ const ApiDichVuService = {
         throw error;
       }
     },
+
   };
   
+  export default ApiUtilityService;
   
-export default ApiDichVuService;

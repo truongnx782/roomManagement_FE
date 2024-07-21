@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import PhongComponent from './components/Phong';
-import DichVuComponent from './components/DichVu';
-import TienIchComponent from './components/TienIch';
-import KhachHangComponent from './components/KhachHang';
+import RoomComponent from './components/Room';
+import ServiceComponent from './components/Service';
+import UtilityComponent from './components/Utility';
+import CustomerComponent from './components/Customer';
 
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -12,10 +12,10 @@ function App() {
     <div className="App">
       <Router>
         <Routes>
-          <Route path="/phong/hien-thi" element={<PhongComponent  />} />
-          <Route path="/dich-vu/hien-thi" element={<DichVuComponent  />} />
-          <Route path="/tien-ich/hien-thi" element={<TienIchComponent  />} />
-          <Route path="/khach-hang/hien-thi" element={<KhachHangComponent  />} />
+          <Route path="/phong/hien-thi" element={<RoomComponent  />} />
+          <Route path="/dich-vu/hien-thi" element={<ServiceComponent  />} />
+          <Route path="/tien-ich/hien-thi" element={<UtilityComponent  />} />
+          <Route path="/khach-hang/hien-thi" element={<CustomerComponent  />} />
         </Routes>
       </Router>
     </div>

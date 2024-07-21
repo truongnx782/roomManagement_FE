@@ -1,4 +1,4 @@
-const ApiPhong_TienIchService = {
+const ApiRoom_UtilityService = {
 
     async getById(id) {
         try {
@@ -93,4 +93,4 @@ const ApiPhong_TienIchService = {
     },
 };
 
-export default ApiPhong_TienIchService;
+export default ApiRoom_UtilityService;

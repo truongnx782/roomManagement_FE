@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import ApiService from '../Service/ApiPhongService';
-import ApiTienIchService from '../Service/ApiTienIchService';
-import ApiPhong_TienIchService from '../Service/ApiPhong_TienIchService';
+import ApiService from '../Service/ApiRoomService';
+import ApiTienIchService from '../Service/ApiUtilityService';
+import ApiPhong_TienIchService from '../Service/ApiRoom_UtilityService';
 import ApiImageService from '../Service/ApiImageSercice';
 import SidebarMenu from './SidebarMenu';
 import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
@@ -348,6 +348,7 @@ function TableComponent() {
           {value.status === 0 ? (
             <Button
               icon={<RetweetOutlined />}
+              style={{ color  : 'blue', borderColor:'blue' }}
               onClick={() => confirmRestore(value.id)}  >
             </Button>
           ) : (
