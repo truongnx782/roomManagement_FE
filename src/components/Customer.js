@@ -15,7 +15,6 @@ function TableComponent() {
     const [total, setTotal] = useState(0);
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const { Option } = Select;
 
@@ -49,7 +48,6 @@ function TableComponent() {
             if (!validate()) {
                 return;
             }
-            setLoading(true);
             if (isNew) {
                 await ApiService.create(selectedData);
                 message.success('Thêm mới thành công!');
@@ -61,9 +59,7 @@ function TableComponent() {
             setModalVisible(false);
         } catch (error) {
             console.error('Error saving data:', error);
-        } finally {
-            setLoading(false);
-        }
+        } 
     };
 
     const remove = async (id) => {
@@ -173,35 +169,28 @@ function TableComponent() {
             dataIndex: 'customerCode',
             key: 'customerCode',
             sorter: (a, b) => a.customerCode.localeCompare(b.customerCode),
-            width: '14%',
+            width: '16%',
         },
         {
             title: 'Tên khách hàng',
             dataIndex: 'customerName',
             key: 'customerName',
             sorter: (a, b) => a.customerName.localeCompare(b.customerName),
-            width: '14%',
-        },
-        {
-            title: 'Số CCCD',
-            dataIndex: 'identityNumber',
-            key: 'identityNumber',
-            sorter: (a, b) => a.identityNumber.localeCompare(b.identityNumber),
-            width: '14%',
+            width: '18%',
         },
         {
             title: 'SDT',
             dataIndex: 'phoneNumber',
             key: 'phoneNumber',
             sorter: (a, b) => a.phoneNumber.localeCompare(b.phoneNumber),
-            width: '14%',
+            width: '16%',
         },
         {
             title: 'Ngày sinh',
             dataIndex: 'birthdate',
             key: 'birthdate',
             sorter: (a, b) => a.birthdate.localeCompare(b.birthdate),
-            width: '14%',
+            width: '16%',
         },
         {
             title: 'Trạng thái',
@@ -221,7 +210,7 @@ function TableComponent() {
                     {value === 1 ? 'Hoạt động' : 'Ngưng hoạt động'}
                 </span>
             ),
-            width: '14%',
+            width: '16%',
         },
         {
             title: 'Hành động',
@@ -249,7 +238,7 @@ function TableComponent() {
                     )}
                 </div>
             ),
-            width: '15%',
+            width: '16%',
         },
     ];
 
@@ -318,7 +307,7 @@ function TableComponent() {
                         width="40vw"
                         footer={[
                             <Button key="back" onClick={onHide}>Hủy</Button>,
-                            <Button key="submit" type="primary" loading={loading} onClick={confirmSave}>
+                            <Button key="submit" type="primary" onClick={confirmSave}>
                                 Lưu
                             </Button>,
                         ]}

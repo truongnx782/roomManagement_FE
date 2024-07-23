@@ -5,6 +5,7 @@ import {
   CalendarOutlined,
   MailOutlined,
   UnorderedListOutlined,
+  SnippetsOutlined ,
 } from '@ant-design/icons';
 import 'antd/dist/reset.css'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -33,6 +34,12 @@ const items = [
     icon: <UnorderedListOutlined />,
     label: 'QL Khách hàng',
     link: 'http://localhost:3000/khach-hang/hien-thi',
+  },
+  {
+    key: '9',
+    icon: <SnippetsOutlined />,
+    label: 'QL Hợp đồng',
+    link: 'http://localhost:3000/hop-dong/hien-thi',
   },
 ];
 
@@ -82,7 +89,7 @@ const SidebarMenu = () => {
           Menu
         </h4>
         <div style={{ marginBottom: '16px' }} className='d-flex justify-content-center'>
-          <h4> Xin chào !</h4>
+        <h4 style={{ color: '#ff1493' }}>Hello: Chuonnn</h4>
         </div>
         <Menu
           style={{ flex: 1, border: 'none' }}

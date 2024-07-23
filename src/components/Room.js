@@ -20,7 +20,6 @@ function TableComponent() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(null);
   const [selectedImages, setSelectedImages] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [utilitys, setUtilitys] = useState([]);
   const [selectedUtility, setSelectedUtility] = useState([]);
   const [fetchedImages, setFetchedImages] = useState([]);
@@ -72,7 +71,6 @@ function TableComponent() {
       if (!validate()) {
         return;
       }
-      setLoading(true);
       const formData = new FormData();
 
       if (isNew) {
@@ -120,8 +118,6 @@ function TableComponent() {
       setModalVisible(false);
     } catch (error) {
       console.error('Error saving data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -429,7 +425,7 @@ function TableComponent() {
             width="70vw"
             footer={[
               <Button key="back" onClick={onHide}>Hủy</Button>,
-              <Button key="submit" type="primary" loading={loading} onClick={confirmSave}>
+              <Button key="submit" type="primary" onClick={confirmSave}>
                 Lưu
               </Button>,
             ]}
@@ -489,6 +485,8 @@ function TableComponent() {
                   placeholder="Chọn tiện ích"
                   className={errors.utilities ? 'is-invalid' : ''}
                   showSearch
+
+                  // Cho phép tìm kiếm theo trường được hiển thị của option
                   filterOption={(input, option) =>
                     option.children.toLowerCase().includes(input.toLowerCase())
                   }

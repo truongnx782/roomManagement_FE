@@ -15,7 +15,6 @@ function TableComponent() {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const { Option } = Select;
 
@@ -49,7 +48,6 @@ function TableComponent() {
       if (!validate()) {
         return;
       }
-      setLoading(true);
       if (isNew) {
         await ApiService.create(selectedData);
         message.success('Thêm mới thành công!');
@@ -61,9 +59,7 @@ function TableComponent() {
       setModalVisible(false);
     } catch (error) {
       console.error('Error saving data:', error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   const remove = async (id) => {
@@ -329,7 +325,7 @@ function TableComponent() {
             width="70vw"
             footer={[
               <Button key="back" onClick={onHide}>Hủy</Button>,
-              <Button key="submit" type="primary" loading={loading} onClick={confirmSave}>
+              <Button key="submit" type="primary" onClick={confirmSave}>
                 Lưu
               </Button>,
             ]}

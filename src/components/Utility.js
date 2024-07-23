@@ -16,7 +16,6 @@ function TableComponent() {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const { Option } = Select;
 
@@ -50,7 +49,6 @@ function TableComponent() {
       if (!validate()) {
         return;
       }
-      setLoading(true);
       if (isNew) {
         await ApiService.create(selectedData);
         message.success('Thêm mới thành công!');
@@ -62,9 +60,7 @@ function TableComponent() {
       setModalVisible(false);
     } catch (error) {
       console.error('Error saving data:', error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   const remove = async (id) => {
@@ -90,7 +86,7 @@ function TableComponent() {
   const confirmDelete = (id) => {
     Modal.confirm({
       title: 'Xác nhận',
-      content: 'Bạn có chắc chắn muốn xoá tiện ích này?',
+      content: 'Bạn có chắc chắn muốn đóng tiện ích này?',
       okText: 'Xác nhận',
       okType: 'danger',
       cancelText: 'Huỷ',
@@ -101,7 +97,7 @@ function TableComponent() {
   const confirmRestore = (id) => {
     Modal.confirm({
       title: 'Xác nhận',
-      content: 'Bạn có chắc chắn muốn khôi ơhujc tiện ích này?',
+      content: 'Bạn có chắc chắn muốn khôi phục tiện ích này?',
       okText: 'Xác nhận',
       okType: 'primary',
       cancelText: 'Huỷ',
@@ -280,7 +276,7 @@ function TableComponent() {
             width="40vw"
             footer={[
               <Button key="back" onClick={onHide}>Hủy</Button>,
-              <Button key="submit" type="primary" loading={loading} onClick={confirmSave}>
+              <Button key="submit" type="primary"  onClick={confirmSave}>
                 Lưu
               </Button>,
             ]}
