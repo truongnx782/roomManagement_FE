@@ -12,7 +12,6 @@ function TableComponent() {
   const [rooms, setRooms] = useState([])
   const [customers, setCustomers] = useState([])
   const [selectedData, setSelectedData] = useState([]);
-  const [selectedCustomers, setSelectedCustomers] = useState([])
   const [dataCustomer, setDataCustomer] = useState([]);
   const [isNew, setIsNew] = useState(false);
   const [errors, setErrors] = useState([]);
@@ -25,6 +24,8 @@ function TableComponent() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalCustomer, setModalCustomer] = useState(false);
   const { Option } = Select;
+  const { TextArea } = Input;
+
 
   useEffect(() => {
     fetchData();
@@ -74,20 +75,9 @@ function TableComponent() {
 
   const save = async () => {
     try {
-
-      const transformedArray = selectedCustomers.map(number => {
-        return { id: number };
-    });
-
-    console.log(transformedArray)
-
-    setSelectedData([...selectedData, { contractDetail: transformedArray }]);
-
       if (!validate()) {
         return;
       }
-
-
       if (isNew) {
         await ApiService.create(selectedData);
         message.success('Thêm mới thành công!');
@@ -159,7 +149,6 @@ function TableComponent() {
   const onHide = () => {
     setModalVisible(false);
     setSelectedData(null);
-    setSelectedCustomers([]);
     setIsNew(false);
     setErrors({});
   };
@@ -167,7 +156,6 @@ function TableComponent() {
   const openNew = () => {
     setSelectedData(null);
     setModalVisible(true);
-    setSelectedCustomers([]);
     setIsNew(true);
   };
 
@@ -189,8 +177,8 @@ function TableComponent() {
       isValid = false;
     }
 
-    if (!selectedCustomers || selectedCustomers.length == 0) {
-      errors.customer = 'Khách hàng không được để trống.';
+    if (!selectedData || !selectedData.customerIds) {
+      errors.customerIds = 'Khách hàng không được để trống.';
       isValid = false;
     }
     setErrors(errors);
@@ -484,34 +472,40 @@ function TableComponent() {
                       onClick={openNewCustomer}>
                       +
                     </Button>
-
                   </div>
                   <Select
                     id="customers"
-                    value={selectedCustomers}
+                    value={selectedData?.customerIds || []}
+                    onChange={(value) => setSelectedData({ ...selectedData, customerIds: value })}
                     mode='multiple'
-                    onChange={setSelectedCustomers}
                     style={{ width: '100%' }}
                     placeholder="Chọn khách hàng"
-                    className={errors.customer ? 'is-invalid' : ''}
+                    className={errors.customerIds ? 'is-invalid' : ''}
                     showSearch
-
-                    // Cho phép tìm kiếm theo trường được hiển thị của option
                     filterOption={(input, option) =>
                       option.children.toLowerCase().includes(input.toLowerCase())
                     }
                   >
                     {customers
-                      .filter(option => option.status === 1 || selectedCustomers.includes(option.id))
+                      .filter(option => option.status === 1 || selectedData?.customerIds?.includes(option.id))
                       .map(customer => (
                         <Option key={customer.id} value={customer.id}>
                           {customer.customerName + ' - ' + customer.phoneNumber}
                         </Option>
                       ))}
                   </Select>
-                  {<div style={{ color: 'red' }}>{errors.customer}</div>}
-
+                  {<div style={{ color: 'red' }}>{errors.customerIds}</div>}
                 </div>
+
+                <div>
+                  <label>Điều khoản</label>
+                  <TextArea
+                    value={selectedData?.terms || ''}
+                    onChange={handleInputChange('terms')}
+                  />
+                  {errors.terms && <div style={{ color: 'red' }}>{errors.terms}</div>}
+                </div>
+
 
               </div>
             </form>
