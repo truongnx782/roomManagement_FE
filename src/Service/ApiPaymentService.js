@@ -1,12 +1,12 @@
 const ApiPaymentService={
-    async search(page, size, search, status) {
+    async search(page, size, search, paymentStatus) {
         try {
           const response = await fetch('http://localhost:8080/payment/search', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ page, size, search, status }),
+            body: JSON.stringify({ page, size, search, paymentStatus }),
           });
           if (!response.ok) {
             throw new Error('Failed to fetch data');

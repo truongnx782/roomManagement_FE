@@ -392,7 +392,7 @@ function TableComponent() {
               value={status}
               onChange={setStatus}
             >
-              <Option value="">Tất cả</Option>
+              <Option value={null}>Tất cả</Option>
               <Option value={1}>Hoạt động</Option>
               <Option value={0}>Ngưng hoạt động</Option>
             </Select>

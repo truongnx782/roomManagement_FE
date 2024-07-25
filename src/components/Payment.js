@@ -16,7 +16,7 @@ function TableComponent() {
     const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
     const [search, setSearch] = useState('');
-    const [status, setStatus] = useState(null);
+    const [paymentStatus, setPaymentStatus] = useState(null);
     const [service, setService] = useState([]);
 
     const [showForm, setShowForm] = useState(false);
@@ -25,7 +25,7 @@ function TableComponent() {
 
     useEffect(() => {
         fetchData();
-    }, [page, pageSize, search, status]);
+    }, [page, pageSize, search, paymentStatus]);
 
     useEffect(() => {
         fetchService();
@@ -33,7 +33,7 @@ function TableComponent() {
 
     const fetchData = async () => {
         try {
-            const response = await ApiService.search(page - 1, pageSize, search, status);
+            const response = await ApiService.search(page - 1, pageSize, search, paymentStatus);
             setData(response.content);
             setTotal(response.totalElements);
         } catch (error) {
@@ -52,11 +52,11 @@ function TableComponent() {
 
     const detail = async (id) => {
         try {
-             const result = await ApiPaymentDetailService.getByPaymentId(id);
+            const result = await ApiPaymentDetailService.getByPaymentId(id);
             //  setSelectedData(selectedData=>({
             //     ...selectedData, ids:result
             //  }))
-             setSelectedData(result);
+            setSelectedData(result);
             //  setIsNew(false);
             // setSelectedData(selectedData => ({
             //     ...selectedData,
@@ -186,13 +186,13 @@ function TableComponent() {
                         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                             <span style={{ marginRight: '8px' }}>Trạng thái: </span>
                             <Select
-                                value={status}
-                                onChange={(value) => setStatus(value)}
+                                value={paymentStatus}
+                                onChange={setPaymentStatus}
                                 style={{ width: '100px' }}
                             >
-                                <Option value=''>Tất cả</Option>
-                                <Option value="0">Đã thanh toán</Option>
-                                <Option value="1">Chưa thanh toán</Option>
+                                <Option value={null}>Tất cả</Option>
+                                <Option value={1}>Đã thanh toán</Option>
+                                <Option value={0}>Chưa thanh toán</Option>
                             </Select>
                         </div>
                         <Table
@@ -245,9 +245,9 @@ function TableComponent() {
                                 </div>
                             ))}
 
-<label>
-    haha{selectedData?.ids?.[1]?.amount || 'Không có giá trị'}
-</label>
+                            <label>
+                                haha{selectedData?.ids?.[1]?.amount || 'Không có giá trị'}
+                            </label>
 
 
 
