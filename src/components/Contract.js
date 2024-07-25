@@ -167,11 +167,6 @@ function TableComponent() {
     let isValid = true;
     const errors = {};
 
-    if (!selectedData || !selectedData.startDate) {
-      errors.startDate = 'Ngày bắt đầu không được để trống.';
-      isValid = false;
-    }
-
     if (!selectedData || !selectedData.room) {
       errors.room = 'Phòng không được để trống.';
       isValid = false;
@@ -181,6 +176,22 @@ function TableComponent() {
       errors.customerIds = 'Khách hàng không được để trống.';
       isValid = false;
     }
+
+    if (!selectedData || !selectedData.startDate) {
+      errors.startDate = 'Ngày bắt đầu không được để trống.';
+      isValid = false;
+    } else {
+      const startDate = new Date(selectedData.startDate);
+      if (selectedData.endDate) {
+        const endDate = new Date(selectedData.endDate);
+        if (endDate < startDate) {
+          errors.endDate = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.';
+          isValid = false;
+        }
+      }
+    }
+
+
     setErrors(errors);
     return isValid;
   };

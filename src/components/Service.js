@@ -154,11 +154,11 @@ function TableComponent() {
       isValid = false;
     } else {
       const startDate = new Date(selectedData.startDate);
-      const today = new Date();
-      if (startDate < today) {
-        errors.startDate = 'Ngày bắt đầu không được nhỏ hơn ngày hiện tại.';
-        isValid = false;
-      }
+      // const today = new Date();
+      // if (startDate < today) {
+      //   errors.startDate = 'Ngày bắt đầu không được nhỏ hơn ngày hiện tại.';
+      //   isValid = false;
+      // }
       if (selectedData.endDate) {
         const endDate = new Date(selectedData.endDate);
         if (endDate < startDate) {

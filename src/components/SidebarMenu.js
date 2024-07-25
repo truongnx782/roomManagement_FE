@@ -6,6 +6,7 @@ import {
   MailOutlined,
   UnorderedListOutlined,
   SnippetsOutlined ,
+  DollarOutlined,
 } from '@ant-design/icons';
 import 'antd/dist/reset.css'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -40,6 +41,12 @@ const items = [
     icon: <SnippetsOutlined />,
     label: 'QL Hợp đồng',
     link: 'http://localhost:3000/hop-dong/hien-thi',
+  },
+  {
+    key: '10',
+    icon: <DollarOutlined />,
+    label: 'QL Thanh toán',
+    link: 'http://localhost:3000/thanh-toan/hien-thi',
   },
 ];
 

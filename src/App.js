@@ -4,6 +4,8 @@ import ServiceComponent from './components/Service';
 import UtilityComponent from './components/Utility';
 import CustomerComponent from './components/Customer';
 import ContractComponent from './components/Contract';
+import PaymentComponent from './components/Payment';
+
 // import ContractTableComponent from './components/Contract/ContractTable';
 // import ContractFormComponent from './components/Contract/ContractForm';
 
@@ -21,6 +23,7 @@ function App() {
           <Route path="/tien-ich/hien-thi" element={<UtilityComponent />} />
           <Route path="/khach-hang/hien-thi" element={<CustomerComponent />} />
           <Route path="/hop-dong/hien-thi" element={<ContractComponent />} />
+          <Route path="/thanh-toan/hien-thi" element={<PaymentComponent />} />
           {/* <Route path="/hop-dong/table" element={<ContractTableComponent />} />
           <Route path="/hop-dong/form" element={<ContractFormComponent />} />
           <Route path="/hop-dong/form/:id" element={<ContractFormComponent />} /> */}
