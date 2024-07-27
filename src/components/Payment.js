@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ApiService from '../Service/ApiPaymentService.js';
 import ApiServiceService from '../Service/ApiServiceService.js';
 import ApiPaymentDetailService from '../Service/ApiPaymentDetailService.js';
 
 import SidebarMenu from './SidebarMenu';
-import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
+import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd'
+import { Space, Switch } from 'antd';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function TableComponent() {
     const [data, setData] = useState([]);
     const [selectedData, setSelectedData] = useState(null);
-    const [isNew, setIsNew] = useState(false);
+    const [isNew, setIsNew] = useState(true);
     const [errors, setErrors] = useState({});
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -22,14 +23,14 @@ function TableComponent() {
     const [showForm, setShowForm] = useState(false);
     const { Option } = Select;
 
-
+    const firstRenderRef = useRef(true);  // Cờ để kiểm tra lần render đầu tiên
     useEffect(() => {
+        if (firstRenderRef.current) {
+            firstRenderRef.current = false;
+            fetchService();
+        }
         fetchData();
     }, [page, pageSize, search, paymentStatus]);
-
-    useEffect(() => {
-        fetchService();
-    }, []);
 
     const fetchData = async () => {
         try {
@@ -63,6 +64,12 @@ function TableComponent() {
             //     paymentId: id
             // }));
             setShowForm(true);
+            if (result?.ids.length > 0) {
+                setIsNew(false)
+            }
+            else {
+                setIsNew(true)
+            }
         } catch (error) {
             console.error('Error fetching details for edit:', error);
         }
@@ -70,23 +77,27 @@ function TableComponent() {
 
     const save = async () => {
         try {
-            // if (isNew) {
             await ApiPaymentDetailService.create(selectedData);
             message.success('Thêm mới thành công!');
-            // } else {
-            //     await ApiService.update(selectedData.id, selectedData);
-            //     message.success('Cập nhật thành công!');
-            // }
             fetchData();
         } catch (error) {
             console.error('Error saving data:', error);
         }
     };
 
+    const handleStatusChange = async (id, checked) => {
+        try {
+            await ApiService.updatePaymentStatus(id, checked ? 1 : 0);
+            message.success('Cập nhật trạng thái thành công!');
+            fetchData();
+        } catch (error) {
+            console.error('Error updating status:', error);
+            message.error('Cập nhật trạng thái thất bại!');
+        }
+    };
 
     const confirmSave = () => {
-        console.log(selectedData)
-        console.log(service)
+        console.log(data)
         Modal.confirm({
             title: 'Xác nhận',
             content: 'Bạn có chắc chắn muốn lưu thông tin thanh toán này này?',
@@ -97,13 +108,16 @@ function TableComponent() {
         });
     };
 
-
-
-    // const handleInputChange = (field) => (e) => {
-    //     setSelectedData((prev) => ({ ...prev, [field]: e.target.value }));
-    // };
-
-
+    const confimStatusChange = (id, checked) => {
+        Modal.confirm({
+            title: 'Xác nhận',
+            content: 'Bạn có chắc chắn muốn chuyển trạng thái?',
+            okText: 'Xác nhận',
+            okType: 'primary',
+            cancelText: 'Huỷ',
+            onOk: () => handleStatusChange(id, checked),
+        });
+    };
 
     const columns = [
         {
@@ -133,6 +147,13 @@ function TableComponent() {
             width: '20%',
         },
         {
+            title: 'Giá phòng',
+            key: 'rentPrice',
+            render: (value) => `${value.contract.rentPrice}`,
+            sorter: (a, b) => a.value.contract.rentPrice.localeCompare(b.value.contract.rentPrice),
+            width: '20%',
+        },
+        {
             title: 'Hạn',
             dataIndex: 'paymentDate',
             key: 'paymentDate',
@@ -141,21 +162,17 @@ function TableComponent() {
         },
         {
             title: 'Trạng thái',
-            dataIndex: 'paymentStatus',
-            key: 'paymentStatus',
+            key: 'action',
             sorter: (a, b) => a.paymentStatus - b.paymentStatus,
             render: (value) => (
-                <span
-                    style={{
-                        color: value === 1 ? 'green' : 'red',
-                        backgroundColor: value === 1 ? '#e6ffe6' : '#ffe6e6',
-                        border: value === 1 ? '1px solid green' : '1px solid red',
-                        borderRadius: '4px',
-                        padding: '2px 8px',
-                    }}
-                >
-                    {value === 1 ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                </span>
+                <Space>
+                    <Switch
+                        checked={value.paymentStatus === 1}
+                        onChange={(checked) => confimStatusChange(value.id, checked)}
+                        checkedChildren="Đã TT"
+                        unCheckedChildren="Chưa TT"
+                    />
+                </Space>
             ),
             width: '20%'
         }
@@ -167,7 +184,7 @@ function TableComponent() {
                 <SidebarMenu />
             </div>
             <div style={{ marginLeft: '15%', width: '85%', padding: '16px', display: 'flex' }}>
-                <div style={{ width: '60%', paddingRight: '8px' }}>
+                <div style={{ width: '65%', paddingRight: '8px' }}>
                     <div className="card shadow-sm card-body p-2 mb-3 mt-2" style={{ height: '7vh', width: '100%', display: 'flex' }}>
                         <div>
                             <p style={{ display: 'inline-block', margin: 0 }}>Quản lý danh mục/ </p>
@@ -175,26 +192,28 @@ function TableComponent() {
                         </div>
                     </div>
                     <div className="card shadow-sm card-body ">
-                        <div style={{ paddingBottom: '8px' }}>
+                        <div style={{ paddingBottom: '8px', display: 'flex', }}>
                             <Input
-                                placeholder="Tìm kiếm khách hàng"
+                                placeholder="Tìm kiếm "
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                style={{ marginBottom: '8px', width: '70%', marginRight: '8px' }}
+                                style={{ marginBottom: '8px', width: '20%', marginRight: '8px' }}
                             />
+
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                                <span style={{ marginRight: '8px' }}>Trạng thái: </span>
+                                <Select
+                                    value={paymentStatus}
+                                    onChange={setPaymentStatus}
+                                    style={{ width: '100px' }}
+                                >
+                                    <Option value={null}>Tất cả</Option>
+                                    <Option value={1}>Đã thanh toán</Option>
+                                    <Option value={0}>Chưa thanh toán</Option>
+                                </Select>
+                            </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                            <span style={{ marginRight: '8px' }}>Trạng thái: </span>
-                            <Select
-                                value={paymentStatus}
-                                onChange={setPaymentStatus}
-                                style={{ width: '100px' }}
-                            >
-                                <Option value={null}>Tất cả</Option>
-                                <Option value={1}>Đã thanh toán</Option>
-                                <Option value={0}>Chưa thanh toán</Option>
-                            </Select>
-                        </div>
+
                         <Table
                             columns={columns}
                             dataSource={data}
@@ -217,7 +236,7 @@ function TableComponent() {
                     </div>
                 </div>
 
-                <div style={{ width: '40%', paddingLeft: '8px', borderLeft: '1px solid #f0f0f0' }}>
+                <div style={{ width: '35%', paddingLeft: '8px', borderLeft: '1px solid #f0f0f0' }}>
                     {service && showForm && (
                         <div className="card shadow-sm card-body p-2">
                             <div className="card shadow-sm card-body">
@@ -231,9 +250,23 @@ function TableComponent() {
 
                             {service.map(svc => (
                                 <div key={svc.id}>
-                                    <label>{svc.serviceName}</label> * đơn giá: <label style={{ color: 'red' }}>{svc.servicePrice}</label>                                    <Input
+                                    <label>{svc.serviceName}</label>
+                                    {/* * đơn giá: <label style={{ color: 'red' }}>{svc.servicePrice}</label> */}
+
+                                    {isNew === true && (
+                                        <label style={{ color: 'red' }}>  * đơn giá: {svc.servicePrice}</label>
+                                    )}
+
+                                    {/* {selectedData?.ids && selectedData.ids.length > 0 && (
+                                        <label style={{ color: 'red' }}>
+                                            {'=' + svc.servicePrice * (selectedData.ids.find(item => item.id === svc.id)?.value || '')}
+                                        </label>
+                                    )} */}
+
+                                    <Input
                                         type="number"
                                         value={selectedData?.ids?.find(item => item.id === svc.id)?.value || ''}
+                                        placeholder='Nhập giá trị'
                                         onChange={(e) => setSelectedData(prev => ({
                                             ...prev,
                                             ids: [
@@ -245,12 +278,26 @@ function TableComponent() {
                                 </div>
                             ))}
 
-                            <label>
-                                haha{selectedData?.ids?.[1]?.amount || 'Không có giá trị'}
-                            </label>
+                            {/* {selectedData?.ids && selectedData.ids.length > 0 && (
+                                <label style={{ color: 'red' }}>Tổng cộng:
+                                    {'=' + service.reduce((total, svc) => {
+                                        const value = selectedData.ids.find(item => item.id === svc.id)?.value || 0;
+                                        return total + (svc.servicePrice * value);
+                                    }, 0)}
+                                </label>
+                            )} */}
 
+                            {/* {data.filter(item => item.contract.id === selectedData.paymentId)
+                                .map(item => (
+                                    <label key={item.contract.id} style={{ color: 'blue' }}>
+                                        Rent Price: {item.contract.room.rentPrice}
+                                    </label>
+                                ))
+                            } */}
 
-
+                            {isNew === false && (
+                                <label style={{ color: 'red' }}>  Tổng cộng dịch vụ: {selectedData?.sum} VND</label>
+                            )}
 
                             <div style={{ marginTop: '16px', textAlign: 'right' }}>
                                 <Button type="primary" onClick={confirmSave}>
@@ -262,8 +309,8 @@ function TableComponent() {
                             </div>
                         </div>
                     )}
-
                 </div>
+
             </div>
         </div>
     );

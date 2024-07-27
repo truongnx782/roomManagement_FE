@@ -16,6 +16,45 @@ const ApiPaymentService={
           console.error('Error fetching data:', error);
           throw error;
         }
-      }
+      },
+
+      async create(data) {
+        try {
+          const response = await fetch(`http://localhost:8080/utility`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+          if (!response.ok) {
+            throw new Error('Failed to create data');
+          }
+          return response.json();
+        } catch (error) {
+          console.error('Error creating data:', error);
+          throw error;
+        }
+      },
+      
+      async updatePaymentStatus(id, checked) {
+        try {
+            const response = await fetch(`http://localhost:8080/payment/payment-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id, checked }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update payment status');
+            }
+            return response.json();
+        } catch (error) {
+            console.error('Error updating payment status:', error);
+            throw error;
+        }
+    }
+    
 }
 export default ApiPaymentService;

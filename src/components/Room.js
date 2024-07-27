@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect ,useRef} from 'react';
 import ApiService from '../Service/ApiRoomService';
 import ApiTienIchService from '../Service/ApiUtilityService';
 import ApiPhong_TienIchService from '../Service/ApiRoom_UtilityService';
@@ -26,10 +26,14 @@ function TableComponent() {
   const [modalVisible, setModalVisible] = useState(false);
   const { Option } = Select;
 
+  const firstRenderRef = useRef(true);  // Cờ để kiểm tra lần render đầu tiên
   useEffect(() => {
-    fetchData();
-    fetchListUtility();
-  }, [page, pageSize, search, status]);
+      if (firstRenderRef.current) {
+          firstRenderRef.current = false;
+          fetchListUtility();
+        }
+      fetchData();
+  },[page, pageSize, search, status]);
 
   const fetchData = async () => {
     try {

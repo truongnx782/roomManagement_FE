@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ApiService from '../Service/ApiContractService';
 import ApiRoomService from '../Service/ApiRoomService';
 import ApiCustomerService from '../Service/ApiCustomerService'
@@ -27,10 +27,14 @@ function TableComponent() {
   const { TextArea } = Input;
 
 
+  const firstRenderRef = useRef(true);  // Cờ để kiểm tra lần render đầu tiên
   useEffect(() => {
+    if (firstRenderRef.current) {
+      firstRenderRef.current = false;
+      fetchRooms();
+      fetchCustomers();
+    }
     fetchData();
-    fetchRooms();
-    fetchCustomers();
   }, [page, pageSize, search, status]);
 
   const fetchData = async () => {
@@ -82,9 +86,13 @@ function TableComponent() {
         await ApiService.create(selectedData);
         message.success('Thêm mới thành công!');
       } else {
-
-        await ApiService.update(selectedData.id, selectedData);
-        message.success('Cập nhật thành công!');
+        const result = await ApiService.update(selectedData.id, selectedData);
+        if (result === false) {
+          message.error('Không được phép cập nhật!');
+        } else {
+          message.success('Cập nhật thành công!');
+          fetchData();
+        }
       }
       fetchData();
       setModalVisible(false);
@@ -300,7 +308,7 @@ function TableComponent() {
     },
     {
       title: 'Giá thuê',
-      dataIndex: ['room', 'rentPrice'],
+      dataIndex:  'rentPrice',
       key: 'rentPrice',
       sorter: (a, b) => a.rentPrice.localeCompare(b.rentPrice),
       width: '14%',
@@ -464,7 +472,7 @@ function TableComponent() {
                     }
                   >
                     {rooms
-                      .filter(option => option.status === 1 || option.id === selectedData?.room?.id)
+                      .filter(option => (option.status === 1 || option.id === selectedData?.room?.id) && (!isNew || option.rentStatus ===0))
                       .map(room => (
                         <Option key={room.id} value={room.id}>
                           {room.roomCode + ' - ' + room.roomName}
