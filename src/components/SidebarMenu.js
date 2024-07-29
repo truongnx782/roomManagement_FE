@@ -48,6 +48,13 @@ const items = [
     label: 'QL Thanh toán',
     link: 'http://localhost:3000/thanh-toan/hien-thi',
   },
+  ,
+  {
+    key: '11',
+    icon: <DollarOutlined />,
+    label: 'QL Bảo trì',
+    link: 'http://localhost:3000/bao-tri/hien-thi',
+  },
 ];
 
 const SidebarMenu = () => {

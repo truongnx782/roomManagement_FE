@@ -78,8 +78,9 @@ function TableComponent() {
     const save = async () => {
         try {
             await ApiPaymentDetailService.create(selectedData);
-            message.success('Thêm mới thành công!');
+            message.success('Lưu thành công!');
             fetchData();
+            setShowForm(false);
         } catch (error) {
             console.error('Error saving data:', error);
         }
@@ -300,9 +301,14 @@ function TableComponent() {
                             )}
 
                             <div style={{ marginTop: '16px', textAlign: 'right' }}>
-                                <Button type="primary" onClick={confirmSave}>
+                                <Button
+                                    type="primary"
+                                    disabled={isNew && selectedData?.ids.length === 0}
+                                    onClick={confirmSave}
+                                >
                                     {isNew ? 'Thêm mới' : 'Cập nhật'}
                                 </Button>
+
                                 <Button style={{ marginLeft: '8px' }} >
                                     Huỷ
                                 </Button>
