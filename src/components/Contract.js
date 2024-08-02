@@ -46,7 +46,7 @@ function TableComponent() {
       console.error('Error fetching data:', error);
     }
   };
-
+  
   const fetchRooms = async () => {
     try {
       const response = await ApiRoomService.getAll();

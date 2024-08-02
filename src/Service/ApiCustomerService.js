@@ -1,7 +1,9 @@
+import fetchWithAuth from '../constants/fetchWithAuth';
+
 const ApiCustomerService = {
     async search(page, size, search, status) {
       try {
-        const response = await fetch('http://localhost:8080/customer/search', {
+        const response = await fetchWithAuth('http://localhost:8080/customer/search', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -19,7 +21,7 @@ const ApiCustomerService = {
     },
     async getAll() {
       try {
-        const response = await fetch('http://localhost:8080/customer', {
+        const response = await fetchWithAuth('http://localhost:8080/customer', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -37,7 +39,7 @@ const ApiCustomerService = {
     
     async getById(id) {
       try {
-        const response = await fetch(`http://localhost:8080/customer/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/customer/${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -55,7 +57,7 @@ const ApiCustomerService = {
     
     async update(id, dataToUpdate) {
       try {
-        const response = await fetch(`http://localhost:8080/customer/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/customer/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -74,7 +76,7 @@ const ApiCustomerService = {
     
     async create(data) {
       try {
-        const response = await fetch(`http://localhost:8080/customer`, {
+        const response = await fetchWithAuth(`http://localhost:8080/customer`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -93,7 +95,7 @@ const ApiCustomerService = {
     
     async delete(id) {
       try {
-        const response = await fetch(`http://localhost:8080/customer/delete/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/customer/delete/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -111,7 +113,7 @@ const ApiCustomerService = {
 
     async restore(id) {
       try {
-        const response = await fetch(`http://localhost:8080/customer/restore/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/customer/restore/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

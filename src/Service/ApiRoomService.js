@@ -1,7 +1,9 @@
+import fetchWithAuth from '../constants/fetchWithAuth';
+
 const ApiRoomService = {
   async search(page, size, search, status) {
     try {
-      const response = await fetch('http://localhost:8080/room/search', {
+      const response = await fetchWithAuth('http://localhost:8080/room/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -20,7 +22,7 @@ const ApiRoomService = {
   
   async getAll(id) {
     try {
-      const response = await fetch(`http://localhost:8080/room`, {
+      const response = await fetchWithAuth(`http://localhost:8080/room`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +41,7 @@ const ApiRoomService = {
 
   async getById(id) {
     try {
-      const response = await fetch(`http://localhost:8080/room/${id}`, {
+      const response = await fetchWithAuth(`http://localhost:8080/room/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +59,7 @@ const ApiRoomService = {
   
   async update(id, dataToUpdate) {
     try {
-      const response = await fetch(`http://localhost:8080/room/${id}`, {
+      const response = await fetchWithAuth(`http://localhost:8080/room/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +78,7 @@ const ApiRoomService = {
   
   async create(data) {
     try {
-      const response = await fetch(`http://localhost:8080/room`, {
+      const response = await fetchWithAuth(`http://localhost:8080/room`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +97,7 @@ const ApiRoomService = {
   
   async delete(id) {
     try {
-      const response = await fetch(`http://localhost:8080/room/delete/${id}`, {
+      const response = await fetchWithAuth(`http://localhost:8080/room/delete/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +114,7 @@ const ApiRoomService = {
   },
   async restore(id) {
     try {
-        const response = await fetch(`http://localhost:8080/room/restore/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/room/restore/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

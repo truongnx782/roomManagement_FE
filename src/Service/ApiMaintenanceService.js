@@ -1,7 +1,9 @@
+import fetchWithAuth from '../constants/fetchWithAuth';
+
 const ApiMaintenanceService = {
     async search(page, size, search, status) {
       try {
-        const response = await fetch('http://localhost:8080/maintenance/search', {
+        const response = await fetchWithAuth('http://localhost:8080/maintenance/search', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -20,7 +22,7 @@ const ApiMaintenanceService = {
   
     async getById(id) {
       try {
-        const response = await fetch(`http://localhost:8080/maintenance/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/maintenance/${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -38,7 +40,7 @@ const ApiMaintenanceService = {
     
     async update(id, dataToUpdate) {
       try {
-        const response = await fetch(`http://localhost:8080/maintenance/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/maintenance/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -57,7 +59,7 @@ const ApiMaintenanceService = {
     
     async create(data) {
       try {
-        const response = await fetch(`http://localhost:8080/maintenance`, {
+        const response = await fetchWithAuth(`http://localhost:8080/maintenance`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -76,7 +78,7 @@ const ApiMaintenanceService = {
     
     async delete(id) {
       try {
-        const response = await fetch(`http://localhost:8080/maintenance/delete/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/maintenance/delete/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -93,7 +95,7 @@ const ApiMaintenanceService = {
     },
     async restore(id) {
       try {
-        const response = await fetch(`http://localhost:8080/maintenance/restore/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/maintenance/restore/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

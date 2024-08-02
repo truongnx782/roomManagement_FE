@@ -1,8 +1,10 @@
+import fetchWithAuth from '../constants/fetchWithAuth';
+
 const ApiRoom_UtilityService = {
 
     async getById(id) {
         try {
-            const response = await fetch(`http://localhost:8080/utility/${id}`, {
+            const response = await fetchWithAuth(`http://localhost:8080/utility/${id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -20,7 +22,7 @@ const ApiRoom_UtilityService = {
 
     async getUtilityIdByRoomId(id) {
         try {
-            const response = await fetch(`http://localhost:8080/room-utility/get-utility-id-by-room-id/${id}`, {
+            const response = await fetchWithAuth(`http://localhost:8080/room-utility/get-utility-id-by-room-id/${id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -38,7 +40,7 @@ const ApiRoom_UtilityService = {
 
     async update(dataToUpdate) {
         try {
-            const response = await fetch(`http://localhost:8080/room-utility/update`, {
+            const response = await fetchWithAuth(`http://localhost:8080/room-utility/update`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,7 +59,7 @@ const ApiRoom_UtilityService = {
 
     async create(data) {
         try {
-            const response = await fetch(`http://localhost:8080/room-utility/create`, {
+            const response = await fetchWithAuth(`http://localhost:8080/room-utility/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -76,7 +78,7 @@ const ApiRoom_UtilityService = {
 
     async delete(id) {
         try {
-            const response = await fetch(`http://localhost:8080/utility/delete/${id}`, {
+            const response = await fetchWithAuth(`http://localhost:8080/utility/delete/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

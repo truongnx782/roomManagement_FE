@@ -1,7 +1,9 @@
+import fetchWithAuth from '../constants/fetchWithAuth';
+
 const ApiPaymentService={
     async getByPaymentId(id) {
         try {
-          const response = await fetch(`http://localhost:8080/payment-detail/paymentId/${id}`, {
+          const response = await fetchWithAuth(`http://localhost:8080/payment-detail/paymentId/${id}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -18,7 +20,7 @@ const ApiPaymentService={
       },
       async create(data) {
         try {
-          const response = await fetch(`http://localhost:8080/payment-detail/create-list`, {
+          const response = await fetchWithAuth(`http://localhost:8080/payment-detail/create-list`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

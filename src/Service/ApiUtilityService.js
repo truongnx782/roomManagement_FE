@@ -1,7 +1,9 @@
+import fetchWithAuth from '../constants/fetchWithAuth';
+
 const ApiUtilityService = {
     async search(page, size, search, status) {
       try {
-        const response = await fetch('http://localhost:8080/utility/search', {
+        const response = await fetchWithAuth('http://localhost:8080/utility/search', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -19,7 +21,7 @@ const ApiUtilityService = {
     },
     async getAll() {
       try {
-        const response = await fetch('http://localhost:8080/utility', {
+        const response = await fetchWithAuth('http://localhost:8080/utility', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -37,7 +39,7 @@ const ApiUtilityService = {
     
     async getById(id) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/utility/${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -55,7 +57,7 @@ const ApiUtilityService = {
     
     async update(id, dataToUpdate) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/utility/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -74,7 +76,7 @@ const ApiUtilityService = {
     
     async create(data) {
       try {
-        const response = await fetch(`http://localhost:8080/utility`, {
+        const response = await fetchWithAuth(`http://localhost:8080/utility`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -93,7 +95,7 @@ const ApiUtilityService = {
     
     async delete(id) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/delete/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/utility/delete/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -110,7 +112,7 @@ const ApiUtilityService = {
     },
     async restore(id) {
       try {
-        const response = await fetch(`http://localhost:8080/utility/restore/${id}`, {
+        const response = await fetchWithAuth(`http://localhost:8080/utility/restore/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
