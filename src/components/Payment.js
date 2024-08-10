@@ -12,14 +12,12 @@ function TableComponent() {
     const [data, setData] = useState([]);
     const [selectedData, setSelectedData] = useState(null);
     const [isNew, setIsNew] = useState(true);
-    const [errors, setErrors] = useState({});
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
     const [search, setSearch] = useState('');
     const [paymentStatus, setPaymentStatus] = useState(null);
     const [service, setService] = useState([]);
-
     const [showForm, setShowForm] = useState(false);
     const { Option } = Select;
 
@@ -54,15 +52,7 @@ function TableComponent() {
     const detail = async (id) => {
         try {
             const result = await ApiPaymentDetailService.getByPaymentId(id);
-            //  setSelectedData(selectedData=>({
-            //     ...selectedData, ids:result
-            //  }))
             setSelectedData(result);
-            //  setIsNew(false);
-            // setSelectedData(selectedData => ({
-            //     ...selectedData,
-            //     paymentId: id
-            // }));
             setShowForm(true);
             if (result?.ids.length > 0) {
                 setIsNew(false)
@@ -150,7 +140,7 @@ function TableComponent() {
         {
             title: 'Giá phòng',
             key: 'rentPrice',
-            render: (value) => `${value.contract.rentPrice}`,
+            render: (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value.contract.rentPrice),
             sorter: (a, b) => a.value.contract.rentPrice.localeCompare(b.value.contract.rentPrice),
             width: '20%',
         },
@@ -185,7 +175,7 @@ function TableComponent() {
                 <SidebarMenu />
             </div>
             <div style={{ marginLeft: '15%', width: '85%', padding: '16px', display: 'flex' }}>
-                <div style={{ width: '65%', paddingRight: '8px' }}>
+                <div style={{ width: '70%', paddingRight: '8px' }}>
                     <div className="card shadow-sm card-body p-2 mb-3 mt-2" style={{ height: '7vh', width: '100%', display: 'flex' }}>
                         <div>
                             <p style={{ display: 'inline-block', margin: 0 }}>Quản lý danh mục/ </p>
@@ -237,33 +227,20 @@ function TableComponent() {
                     </div>
                 </div>
 
-                <div style={{ width: '35%', paddingLeft: '8px', borderLeft: '1px solid #f0f0f0' }}>
+                <div style={{ width: '30%', paddingLeft: '8px', borderLeft: '1px solid #f0f0f0' }}>
                     {service && showForm && (
                         <div className="card shadow-sm card-body p-2">
                             <div className="card shadow-sm card-body">
-                                <p>Chi tiết</p>
+                                <p>Chi tiết: {data.find(item => item.id === selectedData.paymentId)?.paymentCode + ' - ' || ''}
+                                    {data.find(item => item.id === selectedData.paymentId)?.contract.contractCode || ''}
+                                </p>
                             </div>
-
-                            {/* <div>
-                                <p style={{ display: 'inline-block', margin: 0 }}>Thông tin chi tiết:</p>
-                                <h6 style={{ display: 'inline-block', margin: 1 }}>{selectedData.paymentCode}</h6>
-                            </div> */}
-
                             {service.map(svc => (
                                 <div key={svc.id}>
                                     <label>{svc.serviceName}</label>
-                                    {/* * đơn giá: <label style={{ color: 'red' }}>{svc.servicePrice}</label> */}
-
                                     {isNew === true && (
-                                        <label style={{ color: 'red' }}>  * đơn giá: {svc.servicePrice}</label>
+                                        <label style={{ color: 'red' }}>  * đơn giá: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(svc?.servicePrice)}</label>
                                     )}
-
-                                    {/* {selectedData?.ids && selectedData.ids.length > 0 && (
-                                        <label style={{ color: 'red' }}>
-                                            {'=' + svc.servicePrice * (selectedData.ids.find(item => item.id === svc.id)?.value || '')}
-                                        </label>
-                                    )} */}
-
                                     <Input
                                         type="number"
                                         value={selectedData?.ids?.find(item => item.id === svc.id)?.value || ''}
@@ -279,25 +256,10 @@ function TableComponent() {
                                 </div>
                             ))}
 
-                            {/* {selectedData?.ids && selectedData.ids.length > 0 && (
-                                <label style={{ color: 'red' }}>Tổng cộng:
-                                    {'=' + service.reduce((total, svc) => {
-                                        const value = selectedData.ids.find(item => item.id === svc.id)?.value || 0;
-                                        return total + (svc.servicePrice * value);
-                                    }, 0)}
-                                </label>
-                            )} */}
-
-                            {/* {data.filter(item => item.contract.id === selectedData.paymentId)
-                                .map(item => (
-                                    <label key={item.contract.id} style={{ color: 'blue' }}>
-                                        Rent Price: {item.contract.room.rentPrice}
-                                    </label>
-                                ))
-                            } */}
-
                             {isNew === false && (
-                                <label style={{ color: 'red' }}>  Tổng cộng dịch vụ: {selectedData?.sum} VND</label>
+                                <label style={{ color: 'red' }}>
+                                    Tổng cộng dịch vụ: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedData?.sum)}
+                                </label>
                             )}
 
                             <div style={{ marginTop: '16px', textAlign: 'right' }}>

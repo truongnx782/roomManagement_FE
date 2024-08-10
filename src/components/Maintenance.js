@@ -169,14 +169,14 @@ function TableComponent() {
       dataIndex: ['room','roomCode'],
       key: 'roomCode',
       sorter: (a, b) => a.roomCode.localeCompare(b.roomCode),
-      width: '14%',
+      width: '18%',
     },
     {
       title: 'Yêu cầu',
       dataIndex: 'maintenanceRequest',
       key: 'maintenanceRequest',
       sorter: (a, b) => a.maintenanceRequest.localeCompare(b.maintenanceRequest),
-      width: '14%',
+      width: '45%',
     },
     {
       title: 'Trạng thái',
@@ -196,7 +196,7 @@ function TableComponent() {
           {value === 1 ? 'Hoạt động' : 'Ngưng hoạt động'}
         </span>
       ),
-      width: '14%',
+      width: '18%',
     },
     {
       title: 'Hành động',
@@ -224,7 +224,7 @@ function TableComponent() {
           )}
         </div>
       ),
-      width: '15%',
+      width: '18%',
     },
   ];
 

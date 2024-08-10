@@ -276,8 +276,8 @@ function TableComponent() {
     },
     {
       title: 'Giá thuê',
-      dataIndex: 'rentPrice',
       key: 'rentPrice',
+      render: (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value.rentPrice),
       sorter: (a, b) => a.rentPrice - b.rentPrice,
       width: '12%',
     },
@@ -312,7 +312,7 @@ function TableComponent() {
           {value === 0 ? 'Trống' : value === 1 ? 'Đã thuê' : 'Không xác định'}
         </span>
       ),
-      width: '12%',
+      width: '15%',
     },
     {
       title: 'Trạng thái',
@@ -332,7 +332,7 @@ function TableComponent() {
           {value === 1 ? 'Hoạt động' : 'Ngưng hoạt động'}
         </span>
       ),
-      width: '12%',
+      width: '15%',
     },
     {
       title: 'Hành động',
@@ -360,7 +360,7 @@ function TableComponent() {
           )}
         </div>
       ),
-      width: '16%',
+      width: '10%',
     },
   ];
 

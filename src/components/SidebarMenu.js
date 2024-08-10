@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Menu, Button } from 'antd';
 import { AppstoreOutlined, CalendarOutlined, MailOutlined, UnorderedListOutlined, SnippetsOutlined, DollarOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import fetchWithAuth from '../constants/fetchWithAuth';
+
 
 const menuItems = [
   { key: '1', icon: <MailOutlined />, label: 'QL Phòng', link: '/phong/hien-thi' },
@@ -19,12 +21,20 @@ const SidebarMenu = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
+    const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:8080/auth/logout', { method: 'GET', credentials: 'include' });
+      const response = await fetch('http://localhost:8080/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token })
+      });
+  
       if (response.ok) {
         localStorage.removeItem('token');
         localStorage.removeItem('cid');
-        navigate('/login'); // Redirect to login page after successful logout
+        navigate('/login'); 
       } else {
         console.error('Logout failed');
       }
@@ -32,6 +42,7 @@ const SidebarMenu = () => {
       console.error('Logout request failed', error);
     }
   };
+  
 
   return (
     <div style={{ height: '100vh', width: '15%', background: theme === 'light' ? '#f0f2f5' : '#001529', position: 'fixed', top: 0, left: 0, zIndex: 1000, overflowY: 'auto' }}>

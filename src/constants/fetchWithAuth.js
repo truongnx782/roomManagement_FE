@@ -8,10 +8,10 @@ const fetchWithAuth = async (url, options = {}) => {
       ...options.headers
     }
   });
-  if (response.status === 401) {
-    window.location.href = '/login';
-    return;
-  }
+  // if (response.status === 401) {
+  //   window.location.href = '/login';
+  //   return;
+  // }
 
   if (!response.ok) throw new Error('Network response was not ok');
   return response;

@@ -189,8 +189,8 @@ function TableComponent() {
     },
     {
       title: 'Giá dịch vụ',
-      dataIndex: 'servicePrice',
       key: 'servicePrice',
+      render: (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value.servicePrice),
       sorter: (a, b) => a.servicePrice - b.servicePrice,
       width: '14%',
     },

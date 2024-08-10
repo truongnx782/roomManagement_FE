@@ -308,8 +308,8 @@ function TableComponent() {
     },
     {
       title: 'Giá thuê',
-      dataIndex:  'rentPrice',
       key: 'rentPrice',
+      render: (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value.rentPrice),
       sorter: (a, b) => a.rentPrice.localeCompare(b.rentPrice),
       width: '14%',
     },
