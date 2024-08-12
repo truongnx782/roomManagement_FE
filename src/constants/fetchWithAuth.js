@@ -12,8 +12,6 @@ const fetchWithAuth = async (url, options = {}) => {
   //   window.location.href = '/login';
   //   return;
   // }
-
-  if (!response.ok) throw new Error('Network response was not ok');
   return response;
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import ApiService from '../Service/ApiServiceService';
 import SidebarMenu from './SidebarMenu';
 import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
@@ -17,9 +17,13 @@ function TableComponent() {
   const [status, setStatus] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const { Option } = Select;
-
+  
+  const fetchDataRef = useRef(false);
   useEffect(() => {
-    fetchData();
+    if (!fetchDataRef.current) {
+      fetchDataRef.current = true;
+      fetchData();
+    }
   }, [page, pageSize, search, status]);
 
   const fetchData = async () => {

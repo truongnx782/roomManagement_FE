@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ApiService from '../Service/ApiUtilityService';
 import SidebarMenu from './SidebarMenu';
-import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
-import { EditOutlined, DeleteOutlined ,RetweetOutlined} from '@ant-design/icons';
+import { Table, Button, Input, Modal, Select, Pagination, message, Upload, Dropdown } from 'antd';
+import { EditOutlined, DeleteOutlined, RetweetOutlined, UploadOutlined, DownloadOutlined, DownCircleFilled, ExportOutlined } from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 
 function TableComponent() {
   const [data, setData] = useState([]);
@@ -29,7 +28,8 @@ function TableComponent() {
       setData(response.content);
       setTotal(response.totalElements);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -40,7 +40,8 @@ function TableComponent() {
       setIsNew(false);
       setModalVisible(true);
     } catch (error) {
-      console.error('Error fetching details for edit:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -49,6 +50,7 @@ function TableComponent() {
       if (!validate()) {
         return;
       }
+
       if (isNew) {
         await ApiService.create(selectedData);
         message.success('Thêm mới thành công!');
@@ -56,11 +58,13 @@ function TableComponent() {
         await ApiService.update(selectedData.id, selectedData);
         message.success('Cập nhật thành công!');
       }
+
       fetchData();
       setModalVisible(false);
     } catch (error) {
-      console.error('Error saving data:', error);
-    } 
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
+    }
   };
 
   const remove = async (id) => {
@@ -69,7 +73,8 @@ function TableComponent() {
       fetchData();
       message.success('Xoá thành công.');
     } catch (error) {
-      console.error('Error deleting data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -79,7 +84,57 @@ function TableComponent() {
       fetchData();
       message.success('Khôi phục thành công.');
     } catch (error) {
-      console.error('Error restore data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
+    }
+  };
+
+
+  const handleUpload = async ({ file }) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await ApiService.upload(formData);
+      message.success('Tải lên thành công.');
+      fetchData();
+    } catch (error) {
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
+    }
+  };
+
+  const downloadTemplate = async () => {
+    try {
+      const blob = await ApiService.downloadTemplate();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'template.xlsx'; 
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      message.success('Tải về thành công.');
+    } catch (error) {
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
+    }
+  };
+
+  const exportData = async () => {
+    try {
+      const blob = await ApiService.exportData(page - 1, pageSize, search, status);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'template.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      message.success('Tải về thành công.');
+    } catch (error) {
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -184,7 +239,7 @@ function TableComponent() {
     {
       title: 'Hành động',
       key: 'action',
-      render: (value) => (  //value 
+      render: (value) => (  
         <div>
           <Button
             icon={<EditOutlined />}
@@ -195,7 +250,7 @@ function TableComponent() {
           {value.status === 0 ? (
             <Button
               icon={<RetweetOutlined />}
-              style={{ color  : 'blue', borderColor:'blue' }}
+              style={{ color: 'blue', borderColor: 'blue' }}
               onClick={() => confirmRestore(value.id)}>
             </Button>
           ) : (
@@ -208,6 +263,39 @@ function TableComponent() {
         </div>
       ),
       width: '15%',
+    },
+  ];
+
+  const items = [
+    {
+      key: '1',
+      label: (
+        <Upload
+          customRequest={handleUpload}
+          showUploadList={false}
+          accept=".xlsx, .xls"
+        >
+          <Button icon={<UploadOutlined />} type="primary">
+            Import Excel
+          </Button>
+        </Upload>
+      ),
+    },
+    {
+      key: '2',
+      label: (
+        <Button icon={<ExportOutlined />} onClick={exportData}>
+          Export
+        </Button>
+      ),
+    },
+    {
+      key: '3',
+      label: (
+        <Button icon={<DownloadOutlined />} onClick={downloadTemplate}>
+          Template
+        </Button>
+      ),
     },
   ];
 
@@ -224,28 +312,37 @@ function TableComponent() {
           </div>
         </div>
         <div className="card shadow-sm card-body ">
-          <div style={{ marginBottom: 20 }}>
-            <Button
-              type="primary"
-              onClick={openNew}>
-              Thêm mới tiện ích
-            </Button>
-            <Input
-              placeholder="Tìm kiếm..."
-              style={{ width: 200, marginLeft: 20 }}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <Select
-              placeholder="Chọn trạng thái"
-              style={{ width: 200, marginLeft: 20 }}
-              value={status}
-              onChange={setStatus}
-            >
-              <Option value={null}>Tất cả</Option>
-              <Option value={1}>Hoạt động</Option>
-              <Option value={0}>Ngưng hoạt động</Option>
-            </Select>
+          <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between' }}>
+            <div>
+              <Button
+                type="primary"
+                onClick={openNew}>
+                Thêm mới tiện ích
+              </Button>
+              <Input
+                placeholder="Tìm kiếm..."
+                style={{ width: 200, marginLeft: 20 }}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <Select
+                placeholder="Chọn trạng thái"
+                style={{ width: 200, marginLeft: 20 }}
+                value={status}
+                onChange={setStatus}
+              >
+                <Option value={null}>Tất cả</Option>
+                <Option value={1}>Hoạt động</Option>
+                <Option value={0}>Ngưng hoạt động</Option>
+              </Select>
+            </div>
+
+            <Dropdown
+              menu={{ items }}
+              placement="bottom"
+              arrow>
+              <DownCircleFilled style={{ fontSize: '30px', color:'blue' }} />
+            </Dropdown>
 
           </div>
 
@@ -276,7 +373,7 @@ function TableComponent() {
             width="40vw"
             footer={[
               <Button key="back" onClick={onHide}>Hủy</Button>,
-              <Button key="submit" type="primary"  onClick={confirmSave}>
+              <Button key="submit" type="primary" onClick={confirmSave}>
                 Lưu
               </Button>,
             ]}

@@ -27,14 +27,14 @@ function TableComponent() {
   const { TextArea } = Input;
 
 
-  const firstRenderRef = useRef(true);  // Cờ để kiểm tra lần render đầu tiên
+  const fetchDataRef = useRef(false);
   useEffect(() => {
-    if (firstRenderRef.current) {
-      firstRenderRef.current = false;
+    if (!fetchDataRef.current) {
+      fetchDataRef.current = true;
+      fetchData();
       fetchRooms();
       fetchCustomers();
     }
-    fetchData();
   }, [page, pageSize, search, status]);
 
   const fetchData = async () => {

@@ -22,13 +22,12 @@ function TableComponent() {
   const [modalVisible, setModalVisible] = useState(false);
   const { Option } = Select;
 
-  const firstRenderRef = useRef(true);  // Cờ để kiểm tra lần render đầu tiên
+  const fetchDataRef = useRef(false);
   useEffect(() => {
-    if (firstRenderRef.current) {
-      firstRenderRef.current = false;
-      fetchRooms();
+    if (!fetchDataRef.current) {
+      fetchDataRef.current = true;
+      fetchData();
     }
-    fetchData();
   }, [page, pageSize, search, status]);
 
   const fetchData = async () => {

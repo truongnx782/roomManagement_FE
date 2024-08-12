@@ -1,13 +1,12 @@
-import React, { useState, useEffect ,useRef} from 'react';
+import React, { useState, useEffect } from 'react';
 import ApiService from '../Service/ApiRoomService';
 import ApiTienIchService from '../Service/ApiUtilityService';
 import ApiPhong_TienIchService from '../Service/ApiRoom_UtilityService';
 import ApiImageService from '../Service/ApiImageSercice';
 import SidebarMenu from './SidebarMenu';
-import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
-import { EditOutlined, DeleteOutlined ,RetweetOutlined} from '@ant-design/icons';
+import { Table, Button, Input, Modal, Select, Pagination, message, Upload, Dropdown } from 'antd';
+import { EditOutlined, DeleteOutlined, RetweetOutlined, UploadOutlined, DownloadOutlined, DownCircleFilled, ExportOutlined } from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 
 function TableComponent() {
   const [data, setData] = useState([]);
@@ -26,14 +25,10 @@ function TableComponent() {
   const [modalVisible, setModalVisible] = useState(false);
   const { Option } = Select;
 
-  const firstRenderRef = useRef(true);  // Cờ để kiểm tra lần render đầu tiên
   useEffect(() => {
-      if (firstRenderRef.current) {
-          firstRenderRef.current = false;
-          fetchListUtility();
-        }
-      fetchData();
-  },[page, pageSize, search, status]);
+    fetchListUtility();
+    fetchData();
+  }, [page, pageSize, search, status]);
 
   const fetchData = async () => {
     try {
@@ -41,7 +36,8 @@ function TableComponent() {
       setData(response.content);
       setTotal(response.totalElements);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -50,7 +46,8 @@ function TableComponent() {
       const response = await ApiTienIchService.getAll();
       setUtilitys(response);
     } catch (error) {
-      console.error('Error fetching utilities:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -66,7 +63,8 @@ function TableComponent() {
       setIsNew(false);
       setModalVisible(true);
     } catch (error) {
-      console.error('Error fetching details for edit:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -75,10 +73,7 @@ function TableComponent() {
       if (!validate()) {
         return;
       }
-      const formData = new FormData();
-
       if (isNew) {
-        // Create room
         const createdData = await ApiService.create(selectedData);
         const roomId = createdData.id;
 
@@ -121,7 +116,8 @@ function TableComponent() {
       fetchData();
       setModalVisible(false);
     } catch (error) {
-      console.error('Error saving data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -131,7 +127,8 @@ function TableComponent() {
       fetchData();
       message.success('Xoá thành công.');
     } catch (error) {
-      console.error('Error deleting data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -141,9 +138,59 @@ function TableComponent() {
       fetchData();
       message.success('Khôi phục thành công.');
     } catch (error) {
-      console.error('Error deleting data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
+
+  const handleUpload = async ({ file }) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await ApiService.upload(formData);
+      message.success('Tải lên thành công.');
+      fetchData();
+    } catch (error) {
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
+    }
+  };
+
+  const downloadTemplate = async () => {
+    try {
+      const blob = await ApiService.downloadTemplate();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'template.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      message.success('Tải về thành công.');
+    } catch (error) {
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
+    }
+  };
+
+  const exportData = async () => {
+    try {
+      const blob = await ApiService.exportData(page - 1, pageSize, search, status);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'template.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      message.success('Tải về thành công.');
+    } catch (error) {
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
+    }
+  };
+
 
   const confirmDelete = (id) => {
     Modal.confirm({
@@ -348,7 +395,7 @@ function TableComponent() {
           {value.status === 0 ? (
             <Button
               icon={<RetweetOutlined />}
-              style={{ color  : 'blue', borderColor:'blue' }}
+              style={{ color: 'blue', borderColor: 'blue' }}
               onClick={() => confirmRestore(value.id)}  >
             </Button>
           ) : (
@@ -365,6 +412,39 @@ function TableComponent() {
   ];
 
 
+  const items = [
+    {
+      key: '1',
+      label: (
+        <Upload
+          customRequest={handleUpload}
+          showUploadList={false}
+          accept=".xlsx, .xls"
+        >
+          <Button icon={<UploadOutlined />} type="primary">
+            Import Excel
+          </Button>
+        </Upload>
+      ),
+    },
+    {
+      key: '2',
+      label: (
+        <Button icon={<ExportOutlined />} onClick={exportData}>
+          Export
+        </Button>
+      ),
+    },
+    {
+      key: '3',
+      label: (
+        <Button icon={<DownloadOutlined />} onClick={downloadTemplate}>
+          Template
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div style={{ width: '100%' }}>
       <div style={{ width: '15%' }}>
@@ -378,28 +458,37 @@ function TableComponent() {
           </div>
         </div>
         <div className="card shadow-sm card-body ">
-          <div style={{ marginBottom: 20 }}>
-            <Button
-              type="primary"
-              onClick={openNew}>
-              Thêm mới phòng
-            </Button>
-            <Input
-              placeholder="Tìm kiếm..."
-              style={{ width: 200, marginLeft: 20 }}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <Select
-              placeholder="Chọn trạng thái"
-              style={{ width: 200, marginLeft: 20 }}
-              value={status}
-              onChange={setStatus}
-            >
-              <Option value={null}>Tất cả</Option>
-              <Option value={1}>Hoạt động</Option>
-              <Option value={0}>Ngưng hoạt động</Option>
-            </Select>
+          <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between' }}>
+            <div>
+              <Button
+                type="primary"
+                onClick={openNew}>
+                Thêm mới phòng
+              </Button>
+              <Input
+                placeholder="Tìm kiếm..."
+                style={{ width: 200, marginLeft: 20 }}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <Select
+                placeholder="Chọn trạng thái"
+                style={{ width: 200, marginLeft: 20 }}
+                value={status}
+                onChange={setStatus}
+              >
+                <Option value={null}>Tất cả</Option>
+                <Option value={1}>Hoạt động</Option>
+                <Option value={0}>Ngưng hoạt động</Option>
+              </Select>
+            </div>
+
+            <Dropdown
+              menu={{ items }}
+              placement="bottom"
+              arrow>
+              <DownCircleFilled style={{ fontSize: '30px', color: 'blue' }} />
+            </Dropdown>
           </div>
 
           <Table
