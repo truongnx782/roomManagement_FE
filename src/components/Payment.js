@@ -23,11 +23,8 @@ function TableComponent() {
 
     const fetchDataRef = useRef(false);
     useEffect(() => {
-      if (!fetchDataRef.current) {
-        fetchDataRef.current = true;
         fetchData();
         fetchService();
-      }
     }, [page, pageSize, search, paymentStatus]);
 
     const fetchData = async () => {

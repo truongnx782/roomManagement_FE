@@ -155,6 +155,9 @@ function TableComponent() {
       console.error('Error:', error);
       message.error(`Lỗi: ${error.message}`);
     }
+    finally{
+      fetchData();
+  }
   };
 
   const downloadTemplate = async () => {

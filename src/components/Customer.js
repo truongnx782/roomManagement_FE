@@ -94,10 +94,12 @@ function TableComponent() {
         try {
             await ApiService.upload(formData);
             message.success('Tải lên thành công.');
-            fetchData();
         } catch (error) {
             console.error('Error:', error);
             message.error(`Lỗi: ${error.message}`);
+        }
+        finally{
+            fetchData();
         }
     };
 
