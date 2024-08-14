@@ -21,7 +21,6 @@ function TableComponent() {
     const [showForm, setShowForm] = useState(false);
     const { Option } = Select;
 
-    const fetchDataRef = useRef(false);
     useEffect(() => {
         fetchData();
         fetchService();
@@ -232,31 +231,51 @@ function TableComponent() {
                                     {data.find(item => item.id === selectedData.paymentId)?.contract.contractCode || ''}
                                 </p>
                             </div>
-                            {service.map(svc => (
-                                <div key={svc.id}>
-                                    <label>{svc.serviceName}</label>
-                                    {isNew === true && (
-                                        <label style={{ color: 'red' }}>  * đơn giá: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(svc?.servicePrice)}</label>
-                                    )}
-                                    <Input
-                                        type="number"
-                                        value={selectedData?.ids?.find(item => item.id === svc.id)?.value || ''}
-                                        placeholder='Nhập giá trị'
-                                        onChange={(e) => setSelectedData(prev => ({
-                                            ...prev,
-                                            ids: [
-                                                ...(prev?.ids?.filter(item => item.id !== svc.id) || []),
-                                                { id: svc.id, value: Number(e.target.value) }
-                                            ]
-                                        }))}
-                                    />
-                                </div>
-                            ))}
+                            {service
+                                .filter(svc => {
+                                    if (isNew) {
+                                        return svc.status === 1;
+                                    } else {
+                                        return selectedData.ids.find(item => item.id === svc.id);
+                                    }
+                                })
+                                .map(svc => (
+                                    <div key={svc.id}>
+                                        <label>{svc.serviceName}</label>
+                                        {isNew && (
+                                            <label style={{ color: 'red' }}>  * đơn giá: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(svc?.servicePrice)}</label>
+                                        )}
+                                        <Input
+                                            type="number"
+                                            value={selectedData?.ids?.find(item => item.id === svc.id)?.value || ''}
+                                            placeholder='Nhập giá trị'
+                                            onChange={(e) => setSelectedData(prev => ({
+                                                ...prev,
+                                                ids: [
+                                                    ...(prev?.ids?.filter(item => item.id !== svc.id) || []),
+                                                    { id: svc.id, value: Number(e.target.value) }
+                                                ]
+                                            }))}
+                                        />
+                                    </div>
+                                ))
+                            }
 
-                            {isNew === false && (
-                                <label style={{ color: 'red' }}>
-                                    Tổng cộng dịch vụ: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedData?.sum)}
-                                </label>
+
+
+                            {!isNew && (
+                                <>
+                                    <label style={{ color: 'red' }}>
+                                        Tổng cộng dịch vụ: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedData?.sumService)}
+                                    </label>
+                                    <label style={{ color: 'red' }}>
+                                        Tiền phòng: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedData?.rentPrice)}
+                                    </label>
+                                    <hr></hr>
+                                    <label style={{ color: 'red' }}>
+                                        Tổng: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedData?.sum)}
+                                    </label>
+                                </>
                             )}
 
                             <div style={{ marginTop: '16px', textAlign: 'right' }}>
