@@ -1,10 +1,10 @@
-import React, { useState, useEffect ,useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ApiService from '../Service/ApiMaintenanceService';
 import ApiRoomService from '../Service/ApiRoomService';
 
 import SidebarMenu from './SidebarMenu';
 import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd';
-import { EditOutlined, DeleteOutlined ,RetweetOutlined} from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, RetweetOutlined } from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -36,7 +36,8 @@ function TableComponent() {
       setData(response.content);
       setTotal(response.totalElements);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -45,7 +46,8 @@ function TableComponent() {
       const response = await ApiRoomService.getAll();
       setRooms(response);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -56,7 +58,8 @@ function TableComponent() {
       setIsNew(false);
       setModalVisible(true);
     } catch (error) {
-      console.error('Error fetching details for edit:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -75,8 +78,9 @@ function TableComponent() {
       fetchData();
       setModalVisible(false);
     } catch (error) {
-      console.error('Error saving data:', error);
-    } 
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
+    }
   };
 
   const remove = async (id) => {
@@ -85,7 +89,8 @@ function TableComponent() {
       fetchData();
       message.success('Đóng thành công.');
     } catch (error) {
-      console.error('Error deleting data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -95,7 +100,8 @@ function TableComponent() {
       fetchData();
       message.success('Khôi phục thành công.');
     } catch (error) {
-      console.error('Error restore data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -165,7 +171,7 @@ function TableComponent() {
   const columns = [
     {
       title: 'Mã Phòng',
-      dataIndex: ['room','roomCode'],
+      dataIndex: ['room', 'roomCode'],
       key: 'roomCode',
       sorter: (a, b) => a.roomCode.localeCompare(b.roomCode),
       width: '18%',
@@ -211,7 +217,7 @@ function TableComponent() {
           {value.status === 0 ? (
             <Button
               icon={<RetweetOutlined />}
-              style={{ color  : 'blue', borderColor:'blue' }}
+              style={{ color: 'blue', borderColor: 'blue' }}
               onClick={() => confirmRestore(value.id)}>
             </Button>
           ) : (
@@ -292,7 +298,7 @@ function TableComponent() {
             width="40vw"
             footer={[
               <Button key="back" onClick={onHide}>Hủy</Button>,
-              <Button key="submit" type="primary"  onClick={confirmSave}>
+              <Button key="submit" type="primary" onClick={confirmSave}>
                 Lưu
               </Button>,
             ]}
@@ -308,29 +314,29 @@ function TableComponent() {
                 {errors.maintenanceRequest && <div style={{ color: 'red' }}>{errors.maintenanceRequest}</div>}
               </div>
               <div>
-                  <label>Phòng</label>
-                  <Select
-                    id="room"
-                    value={selectedData?.room?.id || ''}
-                    onChange={(value) => setSelectedData({ ...selectedData, room: { id: value } })}
-                    style={{ width: '100%' }}
-                    placeholder="Chọn phòng"
-                    className={errors.room ? 'is-invalid' : ''}
-                    showSearch
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().includes(input.toLowerCase())
-                    }
-                  >
-                    {rooms
-                      .filter(option => (option.status === 1 || option.id === selectedData?.room?.id) )
-                      .map(room => (
-                        <Option key={room.id} value={room.id}>
-                          {room.roomCode + ' - ' + room.roomName}
-                        </Option>
-                      ))}
-                  </Select>
-                  {errors.room && <div style={{ color: 'red' }}>{errors.room}</div>}
-                </div>
+                <label>Phòng</label>
+                <Select
+                  id="room"
+                  value={selectedData?.room?.id || ''}
+                  onChange={(value) => setSelectedData({ ...selectedData, room: { id: value } })}
+                  style={{ width: '100%' }}
+                  placeholder="Chọn phòng"
+                  className={errors.room ? 'is-invalid' : ''}
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
+                >
+                  {rooms
+                    .filter(option => (option.status === 1 || option.id === selectedData?.room?.id))
+                    .map(room => (
+                      <Option key={room.id} value={room.id}>
+                        {room.roomCode + ' - ' + room.roomName}
+                      </Option>
+                    ))}
+                </Select>
+                {errors.room && <div style={{ color: 'red' }}>{errors.room}</div>}
+              </div>
             </form>
           </Modal>
         </div>

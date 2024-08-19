@@ -21,7 +21,7 @@ function TableComponent() {
     const [search, setSearch] = useState('');
     const [paymentStatus, setPaymentStatus] = useState(null);
     const [rooms, setRooms] = useState([])
-    const [roomId,setRoomId]=useState(null)
+    const [roomId, setRoomId] = useState(null)
     const [service, setService] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const { Option } = Select;
@@ -38,7 +38,8 @@ function TableComponent() {
             setData(response.content);
             setTotal(response.totalElements);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error:', error);
+            message.error(`Lỗi: ${error.message}`);
         }
     };
 
@@ -47,18 +48,20 @@ function TableComponent() {
             const response = await ApiServiceService.getAll();
             setService(response);
         } catch (error) {
-            console.error('Error fetching utilities:', error);
+            console.error('Error:', error);
+            message.error(`Lỗi: ${error.message}`);
         }
     };
 
     const fetchRooms = async () => {
         try {
-          const response = await ApiRoomService.getByPaymentExist();
-          setRooms(response);
+            const response = await ApiRoomService.getByPaymentExist();
+            setRooms(response);
         } catch (error) {
-          console.error('Error fetching data:', error);
+            console.error('Error:', error);
+            message.error(`Lỗi: ${error.message}`);
         }
-      };
+    };
 
     const detail = async (id) => {
         try {
@@ -72,7 +75,8 @@ function TableComponent() {
                 setIsNew(true)
             }
         } catch (error) {
-            console.error('Error fetching details for edit:', error);
+            console.error('Error:', error);
+            message.error(`Lỗi: ${error.message}`);
         }
     };
 
@@ -83,7 +87,8 @@ function TableComponent() {
             fetchData();
             setShowForm(false);
         } catch (error) {
-            console.error('Error saving data:', error);
+            console.error('Error:', error);
+            message.error(`Lỗi: ${error.message}`);
         }
     };
 
@@ -93,8 +98,8 @@ function TableComponent() {
             message.success('Cập nhật trạng thái thành công!');
             fetchData();
         } catch (error) {
-            console.error('Error updating status:', error);
-            message.error('Cập nhật trạng thái thất bại!');
+            console.error('Error:', error);
+            message.error(`Lỗi: ${error.message}`);
         }
     };
 
@@ -202,7 +207,7 @@ function TableComponent() {
                                 style={{ marginBottom: '8px', width: '20%', marginRight: '8px' }}
                             />
 
-                           
+
                             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                                 <span style={{ marginRight: '8px' }}>Phòng: </span>
                                 <Select
@@ -211,12 +216,12 @@ function TableComponent() {
                                     style={{ width: '100px' }}
                                     showSearch
                                     filterOption={(input, option) =>
-                                      option.children.toLowerCase().includes(input.toLowerCase())
+                                        option.children.toLowerCase().includes(input.toLowerCase())
                                     }
                                 >
                                     <Option value={null}>Tất cả</Option>
                                     {rooms
-                                        .filter(option => (option.status === 1) )
+                                        .filter(option => (option.status === 1))
                                         .map(room => (
                                             <Option key={room.id} value={room.id}>
                                                 {room.roomCode + ' - ' + room.roomName}

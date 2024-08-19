@@ -1,108 +1,112 @@
 import fetchWithAuth from '../constants/fetchWithAuth';
-
-const ApiRoom_UtilityService = {
-
-    async getById(id) {
+const apiAuthService = {
+    async checkToken() {
         try {
-            const response = await fetchWithAuth(`http://localhost:8080/utility/${id}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            const response = await fetchWithAuth('http://localhost:8080/api/auth/check-token', {
+                method: 'POST'
             });
             if (!response.ok) {
                 const errorData = await response.json();
                 const errorMessage = errorData.message || 'Failed';
                 throw new Error(errorMessage);
             }
-            return response.json();
+            return response
         } catch (error) {
             console.error('Error:', error);
             throw error;
         }
     },
 
-    async getUtilityIdByRoomId(id) {
+    async refreshToken() {
         try {
-            const response = await fetchWithAuth(`http://localhost:8080/room-utility/get-utility-id-by-room-id/${id}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                const errorMessage = errorData.message || 'Failed';
-                throw new Error(errorMessage);
-            }
-            return response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
-    },
-
-    async update(dataToUpdate) {
-        try {
-            const response = await fetchWithAuth(`http://localhost:8080/room-utility/update`, {
+            const response = await fetchWithAuth('http://localhost:8080/api/auth/refresh-token', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dataToUpdate),
             });
             if (!response.ok) {
                 const errorData = await response.json();
                 const errorMessage = errorData.message || 'Failed';
                 throw new Error(errorMessage);
             }
-            return response.json();
+            return response
         } catch (error) {
             console.error('Error:', error);
             throw error;
         }
     },
 
-    async create(data) {
+    async login(values) {
         try {
-            const response = await fetchWithAuth(`http://localhost:8080/room-utility/create`, {
+            const response = await fetch('http://localhost:8080/api/auth/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
+                body: JSON.stringify(values),
+                headers: { 'Content-Type': 'application/json' },
             });
             if (!response.ok) {
                 const errorData = await response.json();
                 const errorMessage = errorData.message || 'Failed';
                 throw new Error(errorMessage);
             }
-            return response.json();
+            return response
         } catch (error) {
             console.error('Error:', error);
             throw error;
         }
     },
 
-    async delete(id) {
+    async register(values) {
         try {
-            const response = await fetchWithAuth(`http://localhost:8080/utility/delete/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            const response = await fetch('http://localhost:8080/api/auth/register', {
+                method: 'POST',
+                body: JSON.stringify(values),
+                headers: { 'Content-Type': 'application/json' },
             });
             if (!response.ok) {
                 const errorData = await response.json();
                 const errorMessage = errorData.message || 'Failed';
                 throw new Error(errorMessage);
             }
-            return response.json();
+            return response
         } catch (error) {
             console.error('Error:', error);
             throw error;
         }
     },
-};
 
-export default ApiRoom_UtilityService;
+    async forgotPassword(values) {
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/forgot-password', {
+                method: 'POST',
+                body: JSON.stringify(values),
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                const errorMessage = errorData.message || 'Failed';
+                throw new Error(errorMessage);
+            }
+            return response
+        } catch (error) {
+            console.error('Error', error);
+            throw error;
+        }
+    },
+    async loginGoogle(sub, picture, name, email) {
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/login-google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sub, picture, name, email }),
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                const errorMessage = errorData.message || 'Failed';
+                throw new Error(errorMessage);
+            }
+            return response
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
+}
+export default apiAuthService;

@@ -10,11 +10,13 @@ const ApiPaymentService={
             },
           });
           if (!response.ok) {
-            throw new Error('Failed to fetch data');
-          }
+            const errorData = await response.json();
+            const errorMessage = errorData.message || 'Failed';
+            throw new Error(errorMessage);
+        }
           return response.json();
         } catch (error) {
-          console.error('Error fetching data:', error);
+          console.error('Error:', error);
           throw error;
         }
       },
@@ -28,11 +30,13 @@ const ApiPaymentService={
             body: JSON.stringify(data),
           });
           if (!response.ok) {
-            throw new Error('Failed to create data');
-          }
+            const errorData = await response.json();
+            const errorMessage = errorData.message || 'Failed';
+            throw new Error(errorMessage);
+        }
           return response.json();
         } catch (error) {
-          console.error('Error creating data:', error);
+          console.error('Error:', error);
           throw error;
         }
       },

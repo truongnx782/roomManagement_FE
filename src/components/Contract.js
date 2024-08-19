@@ -40,8 +40,8 @@ function TableComponent() {
       setData(response.content);
       setTotal(response.totalElements);
     } catch (error) {
-      console.error('Error fetching data:', error);
-    }
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);    }
   };
   
   const fetchRooms = async () => {
@@ -49,8 +49,8 @@ function TableComponent() {
       const response = await ApiRoomService.getAll();
       setRooms(response);
     } catch (error) {
-      console.error('Error fetching data:', error);
-    }
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);    }
   };
 
   const fetchCustomers = async () => {
@@ -58,8 +58,8 @@ function TableComponent() {
       const response = await ApiCustomerService.getAll();
       setCustomers(response);
     } catch (error) {
-      console.error('Error fetching data:', error);
-    }
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);    }
   };
 
   const edit = async (id) => {
@@ -70,8 +70,8 @@ function TableComponent() {
       setIsNew(false);
       setModalVisible(true);
     } catch (error) {
-      console.error('Error fetching details for edit:', error);
-    }
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);    }
   };
 
   const save = async () => {

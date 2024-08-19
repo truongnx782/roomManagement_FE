@@ -25,6 +25,7 @@ function TableComponent() {
     const fetchData = async () => {
         try {
             const response = await ApiService.search(page - 1, pageSize, search, status);
+            console.log(response)
             setData(response.content);
             setTotal(response.totalElements);
         } catch (error) {

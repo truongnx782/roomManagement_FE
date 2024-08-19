@@ -5,9 +5,7 @@ const ApiUtilityService = {
       try {
         const response = await fetchWithAuth('http://localhost:8080/contract/search', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify({ page, size, search, status }),
         });
         if (!response.ok) {
@@ -26,9 +24,7 @@ const ApiUtilityService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/contract/${id}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -46,9 +42,7 @@ const ApiUtilityService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/contract/${id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify(dataToUpdate),
         });
         if (!response.ok) {
@@ -67,9 +61,7 @@ const ApiUtilityService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/contract`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify(data),
         });
         if (!response.ok) {
@@ -88,9 +80,7 @@ const ApiUtilityService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/contract/delete/${id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -107,9 +97,7 @@ const ApiUtilityService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/contract/restore/${id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();

@@ -8,10 +8,6 @@ const fetchWithAuth = async (url, options = {}) => {
       ...options.headers
     }
   });
-  // if (response.status === 401) {
-  //   window.location.href = '/login';
-  //   return;
-  // }
   return response;
 };
 

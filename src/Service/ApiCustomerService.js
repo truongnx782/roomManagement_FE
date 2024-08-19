@@ -5,9 +5,7 @@ const ApiCustomerService = {
       try {
         const response = await fetchWithAuth('http://localhost:8080/customer/search', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify({ page, size, search, status }),
         });
         if (!response.ok) {
@@ -25,9 +23,7 @@ const ApiCustomerService = {
       try {
         const response = await fetchWithAuth('http://localhost:8080/customer', {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -45,9 +41,7 @@ const ApiCustomerService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/customer/${id}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -65,9 +59,7 @@ const ApiCustomerService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/customer/${id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify(dataToUpdate),
         });
         if (!response.ok) {
@@ -86,9 +78,7 @@ const ApiCustomerService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/customer`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify(data),
         });
         if (!response.ok) {
@@ -107,9 +97,7 @@ const ApiCustomerService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/customer/delete/${id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -127,9 +115,7 @@ const ApiCustomerService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/customer/restore/${id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();

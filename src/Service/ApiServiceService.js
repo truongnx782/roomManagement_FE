@@ -5,9 +5,7 @@ const ApiServiceService = {
       try {
         const response = await fetchWithAuth('http://localhost:8080/service/search', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify({ page, size, search, status }),
         });
         if (!response.ok) {
@@ -26,9 +24,7 @@ const ApiServiceService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/service/${id}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -46,9 +42,7 @@ const ApiServiceService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/service/${id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify(dataToUpdate),
         });
         if (!response.ok) {
@@ -67,9 +61,7 @@ const ApiServiceService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/service`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify(data),
         });
         if (!response.ok) {
@@ -88,9 +80,7 @@ const ApiServiceService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/service/delete/${id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -108,9 +98,7 @@ const ApiServiceService = {
       try {
         const response = await fetchWithAuth(`http://localhost:8080/service/restore/${id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -127,9 +115,7 @@ const ApiServiceService = {
       try {
         const response = await fetchWithAuth('http://localhost:8080/service', {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -187,9 +173,7 @@ const ApiServiceService = {
       try {
         const response = await fetchWithAuth('http://localhost:8080/service/export', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+
           body: JSON.stringify({ page, size, search, status }),
         });
   
