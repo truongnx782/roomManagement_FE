@@ -216,7 +216,9 @@ const App = () => {
           </Form>
 
           <Divider>Hoặc đăng nhập với</Divider>
+        
           <Space direction="horizontal" style={{ width: '100%', justifyContent: 'center' }}>
+            <a href='http://localhost:8080/oauth2/authorization/google'> đăng nhập với tài khoản google</a>
             <Button icon={<FacebookOutlined />} />
             <Button icon={<TwitterOutlined />} />
             <GoogleLogin

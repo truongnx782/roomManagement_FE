@@ -27,14 +27,11 @@ function TableComponent() {
   const { TextArea } = Input;
 
 
-  const fetchDataRef = useRef(false);
   useEffect(() => {
-    if (!fetchDataRef.current) {
-      fetchDataRef.current = true;
       fetchData();
       fetchRooms();
       fetchCustomers();
-    }
+
   }, [page, pageSize, search, status]);
 
   const fetchData = async () => {
@@ -97,7 +94,8 @@ function TableComponent() {
       fetchData();
       setModalVisible(false);
     } catch (error) {
-      console.error('Error saving data:', error);
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);
     }
   };
 
@@ -107,8 +105,8 @@ function TableComponent() {
       fetchData();
       message.success('Đóng thành công.');
     } catch (error) {
-      console.error('Error deleting data:', error);
-    }
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);    }
   };
 
   const restore = async (id) => {
@@ -117,8 +115,8 @@ function TableComponent() {
       fetchData();
       message.success('Khôi phục thành công.');
     } catch (error) {
-      console.error('Error restore data:', error);
-    }
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);    }
   };
 
   const confirmDelete = (id) => {
@@ -180,7 +178,7 @@ function TableComponent() {
       isValid = false;
     }
 
-    if (!selectedData || !selectedData.customerIds) {
+    if (!selectedData || !selectedData.customerIds||selectedData.customerIds.length===0) {
       errors.customerIds = 'Khách hàng không được để trống.';
       isValid = false;
     }
@@ -229,8 +227,8 @@ function TableComponent() {
 
       setModalCustomer(false);
     } catch (error) {
-      console.error('Error saving data:', error);
-    }
+      console.error('Error:', error);
+      message.error(`Lỗi: ${error.message}`);    }
   };
 
   const validateCustomer = () => {
@@ -321,18 +319,19 @@ function TableComponent() {
       render: (value) => (
         <span
           style={{
-            color: value === 1 ? 'green' : 'red',
-            backgroundColor: value === 1 ? '#e6ffe6' : '#ffe6e6',
-            border: value === 1 ? '1px solid green' : '1px solid red',
+            color: value === 1 ? 'green' : value === 2 ? 'orange' : 'red',
+            backgroundColor: value === 1 ? '#e6ffe6' : value === 2 ? '#fff4e6' : '#ffe6e6',
+            border: value === 1 ? '1px solid green' : value === 2 ? '1px solid orange' : '1px solid red',
             borderRadius: '4px',
             padding: '2px 8px',
           }}
         >
-          {value === 1 ? 'Hoạt động' : 'Ngưng hoạt động'}
+          {value === 1 ? 'Hoạt động' : value === 2 ? 'Hết hạn' : 'Ngưng hoạt động'}
         </span>
       ),
       width: '14%',
-    },
+    }
+    ,
     {
       title: 'Hành động',
       key: 'action',
@@ -472,7 +471,7 @@ function TableComponent() {
                     }
                   >
                     {rooms
-                      .filter(option => (option.status === 1 || option.id === selectedData?.room?.id) && (!isNew || option.rentStatus ===0))
+                      .filter(option => (option.status === 1 || option.id === selectedData?.room?.id) && ( option.rentStatus ===0 || option.id === selectedData?.room?.id))
                       .map(room => (
                         <Option key={room.id} value={room.id}>
                           {room.roomCode + ' - ' + room.roomName}

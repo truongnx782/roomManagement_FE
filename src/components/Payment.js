@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import ApiService from '../Service/ApiPaymentService.js';
 import ApiServiceService from '../Service/ApiServiceService.js';
 import ApiPaymentDetailService from '../Service/ApiPaymentDetailService.js';
+import ApiRoomService from '../Service/ApiRoomService';
+
+
 
 import SidebarMenu from './SidebarMenu';
 import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd'
@@ -17,18 +20,21 @@ function TableComponent() {
     const [total, setTotal] = useState(0);
     const [search, setSearch] = useState('');
     const [paymentStatus, setPaymentStatus] = useState(null);
+    const [rooms, setRooms] = useState([])
+    const [roomId,setRoomId]=useState(null)
     const [service, setService] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const { Option } = Select;
 
     useEffect(() => {
-        fetchData();
         fetchService();
-    }, [page, pageSize, search, paymentStatus]);
+        fetchData();
+        fetchRooms();
+    }, [page, pageSize, search, paymentStatus, roomId]);
 
     const fetchData = async () => {
         try {
-            const response = await ApiService.search(page - 1, pageSize, search, paymentStatus);
+            const response = await ApiService.search(page - 1, pageSize, search, paymentStatus, roomId);
             setData(response.content);
             setTotal(response.totalElements);
         } catch (error) {
@@ -44,6 +50,15 @@ function TableComponent() {
             console.error('Error fetching utilities:', error);
         }
     };
+
+    const fetchRooms = async () => {
+        try {
+          const response = await ApiRoomService.getAll();
+          setRooms(response);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
 
     const detail = async (id) => {
         try {
@@ -197,6 +212,27 @@ function TableComponent() {
                                     <Option value={null}>Tất cả</Option>
                                     <Option value={1}>Đã thanh toán</Option>
                                     <Option value={0}>Chưa thanh toán</Option>
+                                </Select>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                                <span style={{ marginRight: '8px' }}>Phòng: </span>
+                                <Select
+                                    value={roomId}
+                                    onChange={setRoomId}
+                                    style={{ width: '100px' }}
+                                    showSearch
+                                    filterOption={(input, option) =>
+                                      option.children.toLowerCase().includes(input.toLowerCase())
+                                    }
+                                >
+                                    <Option value={null}>Tất cả</Option>
+                                    {rooms
+                                        .filter(option => (option.status === 1) )
+                                        .map(room => (
+                                            <Option key={room.id} value={room.id}>
+                                                {room.roomCode + ' - ' + room.roomName}
+                                            </Option>
+                                        ))}
                                 </Select>
                             </div>
                         </div>

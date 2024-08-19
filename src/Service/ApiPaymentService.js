@@ -1,14 +1,14 @@
 import fetchWithAuth from '../constants/fetchWithAuth';
 
 const ApiPaymentService={
-    async search(page, size, search, paymentStatus) {
+    async search(page, size, search, paymentStatus,roomId) {
         try {
           const response = await fetchWithAuth('http://localhost:8080/payment/search', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ page, size, search, paymentStatus }),
+            body: JSON.stringify({ page, size, search, paymentStatus,roomId }),
           });
           if (!response.ok) {
             throw new Error('Failed to fetch data');

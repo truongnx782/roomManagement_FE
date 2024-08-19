@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ApiService from '../Service/ApiUtilityService';
 import SidebarMenu from './SidebarMenu';
-import { Table, Button, Input, Modal, Select, Pagination, message, Upload, Dropdown } from 'antd';
+import { Table, Button, Input, Modal, Select, Pagination, message, Upload, Dropdown, Form } from 'antd';
 import { EditOutlined, DeleteOutlined, RetweetOutlined, UploadOutlined, DownloadOutlined, DownCircleFilled, ExportOutlined } from '@ant-design/icons';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function TableComponent() {
   const [data, setData] = useState([]);
-  const [selectedData, setSelectedData] = useState(null);
   const [isNew, setIsNew] = useState(false);
-  const [errors, setErrors] = useState({});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -17,6 +15,7 @@ function TableComponent() {
   const [status, setStatus] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const { Option } = Select;
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchData();
@@ -36,8 +35,8 @@ function TableComponent() {
   const edit = async (id) => {
     try {
       const result = await ApiService.getById(id);
-      setSelectedData(result);
       setIsNew(false);
+      form.setFieldsValue(result);
       setModalVisible(true);
     } catch (error) {
       console.error('Error:', error);
@@ -47,15 +46,18 @@ function TableComponent() {
 
   const save = async () => {
     try {
-      if (!validate()) {
+
+      const values = await form.validateFields().catch(() => null);
+      if (!values) {
         return;
       }
+      const id = form.getFieldValue('id'); 
 
       if (isNew) {
-        await ApiService.create(selectedData);
+        await ApiService.create(values);
         message.success('Thêm mới thành công!');
       } else {
-        await ApiService.update(selectedData.id, selectedData);
+        await ApiService.update(id, values);
         message.success('Cập nhật thành công!');
       }
 
@@ -102,9 +104,9 @@ function TableComponent() {
       console.error('Error:', error);
       message.error(`Lỗi: ${error.message}`);
     }
-    finally{
+    finally {
       fetchData();
-  }
+    }
   };
 
   const downloadTemplate = async () => {
@@ -113,7 +115,7 @@ function TableComponent() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'template.xlsx'; 
+      a.download = 'template.xlsx';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -176,34 +178,16 @@ function TableComponent() {
 
   const onHide = () => {
     setModalVisible(false);
-    setSelectedData(null);
     setIsNew(false);
-    setErrors({});
   };
 
   const openNew = () => {
-    setSelectedData(null);
     setModalVisible(true);
+    form.resetFields();
     setIsNew(true);
   };
 
-  const handleInputChange = (field) => (e) => {
-    setSelectedData((prev) => ({ ...prev, [field]: e.target.value }));
-  };
-
-  const validate = () => {
-    let isValid = true;
-    const errors = {};
-
-    if (!selectedData || !selectedData.utilityName || selectedData.utilityName.trim() === '') {
-      errors.utilityName = 'Tên tiện ích không được để trống.';
-      isValid = false;
-    }
-
-    setErrors(errors);
-    return isValid;
-  };
-
+ 
   const columns = [
     {
       title: 'Mã tiện ích',
@@ -242,7 +226,7 @@ function TableComponent() {
     {
       title: 'Hành động',
       key: 'action',
-      render: (value) => (  
+      render: (value) => (
         <div>
           <Button
             icon={<EditOutlined />}
@@ -344,7 +328,7 @@ function TableComponent() {
               menu={{ items }}
               placement="bottom"
               arrow>
-              <DownCircleFilled style={{ fontSize: '30px', color:'blue' }} />
+              <DownCircleFilled style={{ fontSize: '30px', color: 'blue' }} />
             </Dropdown>
 
           </div>
@@ -381,17 +365,15 @@ function TableComponent() {
               </Button>,
             ]}
           >
-            <form>
-              <div className="row">
-                <label>Tên tiện ích</label>
-                <Input
-                  value={selectedData?.utilityName || ''}
-                  onChange={handleInputChange('utilityName')}
-                  style={{ borderColor: errors.utilityName ? 'red' : '' }}
-                />
-                {errors.utilityName && <div style={{ color: 'red' }}>{errors.utilityName}</div>}
-              </div>
-            </form>
+            <Form form={form} layout="vertical">
+              <Form.Item
+                name="utilityName"
+                label="Tên tiện ích"
+                rules={[{ required: true, message: 'Tên tiện ích không được để trống' }]}
+              >
+                <Input />
+              </Form.Item>
+            </Form>
           </Modal>
         </div>
       </div>

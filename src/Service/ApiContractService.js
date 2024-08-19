@@ -11,11 +11,13 @@ const ApiUtilityService = {
           body: JSON.stringify({ page, size, search, status }),
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch data');
+          const errorData = await response.json();
+          const errorMessage = errorData.message || 'Failed';
+          throw new Error(errorMessage);
         }
         return response.json();
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error:', error);
         throw error;
       }
     },
@@ -29,11 +31,13 @@ const ApiUtilityService = {
           },
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch data');
+          const errorData = await response.json();
+          const errorMessage = errorData.message || 'Failed';
+          throw new Error(errorMessage);
         }
         return response.json();
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error:', error);
         throw error;
       }
     },
@@ -48,11 +52,13 @@ const ApiUtilityService = {
           body: JSON.stringify(dataToUpdate),
         });
         if (!response.ok) {
-          throw new Error('Failed to update data');
+          const errorData = await response.json();
+          const errorMessage = errorData.message || 'Failed';
+          throw new Error(errorMessage);
         }
         return response.json();
       } catch (error) {
-        console.error('Error updating data:', error);
+        console.error('Error:', error);
         throw error;
       }
     },
@@ -67,11 +73,13 @@ const ApiUtilityService = {
           body: JSON.stringify(data),
         });
         if (!response.ok) {
-          throw new Error('Failed to create data');
+          const errorData = await response.json();
+          const errorMessage = errorData.message || 'Failed';
+          throw new Error(errorMessage);
         }
         return response.json();
       } catch (error) {
-        console.error('Error creating data:', error);
+        console.error('Error:', error);
         throw error;
       }
     },
@@ -85,11 +93,13 @@ const ApiUtilityService = {
           },
         });
         if (!response.ok) {
-          throw new Error('Failed to delete data');
+          const errorData = await response.json();
+          const errorMessage = errorData.message || 'Failed';
+          throw new Error(errorMessage);
         }
         return response.json();
       } catch (error) {
-        console.error('Error deleting data:', error);
+        console.error('Error:', error);
         throw error;
       }
     },
@@ -102,11 +112,13 @@ const ApiUtilityService = {
           },
         });
         if (!response.ok) {
-          throw new Error('Failed to restore data');
+          const errorData = await response.json();
+          const errorMessage = errorData.message || 'Failed';
+          throw new Error(errorMessage);
         }
         return response.json();
       } catch (error) {
-        console.error('Error restore data:', error);
+        console.error('Error:', error);
         throw error;
       }
     },
