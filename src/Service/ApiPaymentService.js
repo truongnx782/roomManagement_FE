@@ -1,5 +1,4 @@
-import fetchWithAuth from '../constants/fetchWithAuth';
-
+import fetchWithAuth from '../hooks/fetchWithAuth';
 const ApiPaymentService={
     async search(page, size, search, paymentStatus,roomId) {
         try {

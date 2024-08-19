@@ -1,5 +1,4 @@
-import fetchWithAuth from '../constants/fetchWithAuth';
-
+import fetchWithAuth from '../hooks/fetchWithAuth';
 const ApiCustomerService = {
     async search(page, size, search, status) {
       try {

@@ -1,4 +1,4 @@
-import fetchWithAuth from '../constants/fetchWithAuth';
+import fetchWithAuth from '../hooks/fetchWithAuth';
 const apiAuthService = {
     async checkToken() {
         try {

@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Menu, Button } from 'antd';
 import { AppstoreOutlined, CalendarOutlined, MailOutlined, UnorderedListOutlined, SnippetsOutlined, DollarOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import fetchWithAuth from '../constants/fetchWithAuth';
-
+import fetchWithAuth from '../hooks/fetchWithAuth';
 
 const menuItems = [
   { key: '1', icon: <MailOutlined />, label: 'QL Phòng', link: '/phong/hien-thi' },
