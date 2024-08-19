@@ -22,9 +22,29 @@ const ApiRoomService = {
     }
   },
 
-  async getAll(id) {
+  async getAll() {
     try {
       const response = await fetchWithAuth(`http://localhost:8080/room`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage = errorData.message || 'Failed';
+        throw new Error(errorMessage);
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  async getByPaymentExist() {
+    try {
+      const response = await fetchWithAuth(`http://localhost:8080/room/getByPaymentExist`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

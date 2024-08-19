@@ -53,7 +53,7 @@ function TableComponent() {
 
     const fetchRooms = async () => {
         try {
-          const response = await ApiRoomService.getAll();
+          const response = await ApiRoomService.getByPaymentExist();
           setRooms(response);
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -202,18 +202,7 @@ function TableComponent() {
                                 style={{ marginBottom: '8px', width: '20%', marginRight: '8px' }}
                             />
 
-                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                                <span style={{ marginRight: '8px' }}>Trạng thái: </span>
-                                <Select
-                                    value={paymentStatus}
-                                    onChange={setPaymentStatus}
-                                    style={{ width: '100px' }}
-                                >
-                                    <Option value={null}>Tất cả</Option>
-                                    <Option value={1}>Đã thanh toán</Option>
-                                    <Option value={0}>Chưa thanh toán</Option>
-                                </Select>
-                            </div>
+                           
                             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
                                 <span style={{ marginRight: '8px' }}>Phòng: </span>
                                 <Select
@@ -233,6 +222,18 @@ function TableComponent() {
                                                 {room.roomCode + ' - ' + room.roomName}
                                             </Option>
                                         ))}
+                                </Select>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                                <span style={{ marginRight: '8px' }}>Trạng thái: </span>
+                                <Select
+                                    value={paymentStatus}
+                                    onChange={setPaymentStatus}
+                                    style={{ width: '100px' }}
+                                >
+                                    <Option value={null}>Tất cả</Option>
+                                    <Option value={1}>Đã thanh toán</Option>
+                                    <Option value={0}>Chưa thanh toán</Option>
                                 </Select>
                             </div>
                         </div>
