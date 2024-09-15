@@ -4,8 +4,6 @@ import ApiServiceService from '../Service/ApiServiceService.js';
 import ApiPaymentDetailService from '../Service/ApiPaymentDetailService.js';
 import ApiRoomService from '../Service/ApiRoomService';
 
-
-
 import SidebarMenu from './SidebarMenu';
 import { Table, Button, Input, Modal, Select, Pagination, message } from 'antd'
 import { Space, Switch } from 'antd';
@@ -276,8 +274,9 @@ function TableComponent() {
                             {service
                                 .filter(svc => {
                                     if (isNew) {
-                                        return svc.status === 1;
-                                    } else {
+                                        const currentDate = new Date();
+                                        const startDate = new Date(svc.startDate); 
+                                        return svc.status === 1 && startDate < currentDate;                                    } else {
                                         return selectedData.ids.find(item => item.id === svc.id);
                                     }
                                 })
@@ -302,8 +301,6 @@ function TableComponent() {
                                     </div>
                                 ))
                             }
-
-
 
                             {!isNew && (
                                 <>
