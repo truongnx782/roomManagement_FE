@@ -273,11 +273,12 @@ function TableComponent() {
                             </div>
                             {service
                                 .filter(svc => {
+                                    const currentDate = new Date();
+                                    const startDate = new Date(svc.startDate);
                                     if (isNew) {
-                                        const currentDate = new Date();
-                                        const startDate = new Date(svc.startDate); 
-                                        return svc.status === 1 && startDate < currentDate;                                    } else {
-                                        return selectedData.ids.find(item => item.id === svc.id);
+                                        return svc.status === 1 && startDate < currentDate;
+                                    } else {
+                                        return svc.status === 1 & startDate < currentDate ||selectedData.ids.find(item => item.id === svc.id);
                                     }
                                 })
                                 .map(svc => (
