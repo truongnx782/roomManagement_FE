@@ -2,7 +2,10 @@ import fetchWithAuth from '../hooks/fetchWithAuth';
 const apiAuthService = {
     async checkToken() {
         try {
-            const response = await fetchWithAuth('http://localhost:8080/api/auth/check-token', {
+            const response = await fetchWithAuth('http://localhost:8080/api/auth/introspect', {
+                body: JSON.stringify({
+                    token: localStorage.getItem('token')
+                }),
                 method: 'POST'
             });
             if (!response.ok) {

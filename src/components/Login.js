@@ -37,14 +37,14 @@ const App = () => {
             console.error('Refresh token failed:', await refreshResponse.text());
             navigate('/login');
           }
+
         } else {
           const data = await response.json();
-          if (data) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('cid', data.cid);
+          if (data.result.valid === true) {
+            console.log('valid true')
             navigate('/phong/hien-thi');
           }
-          else if (data.valid === false) {
+         else  if (data.result.valid === false) {
             console.log('valid false')
             navigate('/login');
           }
