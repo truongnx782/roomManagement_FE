@@ -44,6 +44,10 @@ const App = () => {
             localStorage.setItem('cid', data.cid);
             navigate('/phong/hien-thi');
           }
+          else if (data.valid === false) {
+            console.log('valid false')
+            navigate('/login');
+          }
         }
       } catch (error) {
         console.error('Error:', error);
